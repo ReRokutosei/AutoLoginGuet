@@ -9,7 +9,7 @@
 ## 介绍
 理论上该项目适用于供应商为[哆点网络](https://doctorcom.com/)的校园网自动登录。这里只面向GUET的用户，其他学校用户请自行修改配置参数。
 
-网络请求这部分代码逻辑来自于桂林理工大学的大佬[HWinZnieJ](https://www.bilibili.com/opus/646733491161006112#reply258018351937)。
+**网络请求这部分代码逻辑来自于桂林理工大学的大佬[HWinZnieJ](https://www.bilibili.com/opus/646733491161006112#reply258018351937)。**
 
 对于Python我增加了日志输出，并将配置抽取到YAML文件中。由于Python打包的程序太大，所以使用Rust重写并构建了分发包。
 
