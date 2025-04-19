@@ -50,7 +50,7 @@ AutoLogin
 
 ![sign参数获取示意图](image.png)
 
-### Rust版本使用说明
+### Rust版本使用说明 (推荐）
 1. 下载文件
    - [AutoLogin.exe](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/AutoLogin.exe)
    - [config.yaml](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/config.yaml)
@@ -65,25 +65,24 @@ AutoLogin
    - 如需取消，使用 [Rust-取消开机自启-注册表.bat](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/Rust_Cancel_Starup.bat)
 
 ### Python版本使用说明
-1. 克隆项目
+1. 克隆并配置项目
    ```shell
-   git clone https://github.com/GUET-HZY/AutoLogin.git
-   cd AutoLogin
-   ```
-
-2. 配置
-   ```shell
-   python -m pip install -r requirements.txt
+   git clone https://github.com/ReRokutosei/AutoLoginGuet.git
+   cd AutoLoginGuet
    xcopy config.yaml .\Python\ /y
    # 接下来按照上面的步骤修改config.yaml
+
+   cd Python
+   python -m pip install -r requirements.txt
    ```
-3. 测试
+
+2. 测试
    ```shell
    python AutoLogin.pyw
    ```
 
 
-4. 开机自启设置
+3. 开机自启设置
    ```sh
    cd Bat脚本
    ./"Py-设置开机自启-注册表.bat"
