@@ -1,0 +1,15 @@
+network:
+  login_ip: 'http://10.0.1.5/' # 不用动
+  sign_parameter:'' # 填入你校园网账号的请求值，获取方式见文档说明
+  result_return: '"result":1' # 不用动
+  signed_in_title: '注销页' # 不用动
+  not_sign_in_title: '上网登录页' # 不用动
+
+notification: # 自定义通知窗口的图标，仅 Python可用
+  use_custom_icon: False # 是否使用自定义图标，True or False
+  icon_path: './example.ico' # 自定义图标路径
+
+logging: # 自定义日志文件路径和保留天数
+  enable_logging: True # 是否启用日志记录，True or False
+  log_file_path: './AutoLogin.log' # 日志文件路径
+  info_log_retention_days: 7 # 日志中的INFO级信息保留天数

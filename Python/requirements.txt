@@ -1,0 +1,4 @@
+# Python version: 3.12 or higher
+plyer==2.1.0
+PyYAML==6.0.2
+Requests==2.32.3
