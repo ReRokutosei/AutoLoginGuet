@@ -97,6 +97,7 @@ AutoLogin
 ### **环境准备**
 
 1. **安装Rust**  (Windows)
+
    访问 [Rust 官方安装页面](https://www.rust-lang.org/tools/install)，下载适用于 Windows 的 `.exe` 安装程序，并按照提示完成安装。
 
    或者，如果你已经配置了 WSL，可以打开 WSL 终端并执行：
@@ -104,7 +105,7 @@ AutoLogin
    curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
    ```
 
-2. **克隆项目代码**  
+3. **克隆项目代码**  
    使用 `git` 克隆项目到本地：
    ```sh
    git clone https://github.com/ReRokutosei/AutoLoginGuet.git
