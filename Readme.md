@@ -12,7 +12,7 @@
 3. [项目结构](#项目结构)
 4. [快速开始](#快速开始)
    - [配置说明](#配置说明)
-   - [Rust版本使用说明](#Rust版本使用说明)
+   - [Rust版本使用说明（推荐）](#Rust版本使用说明（推荐）)
    - [Python版本使用说明](#python版本使用说明)
 5. [Rust构建说明](#rust构建说明)
    - [环境准备](#环境准备)
@@ -76,7 +76,7 @@ AutoLoginGuet
 
 ![sign参数获取示意图](image.png)
 
-### Rust版本使用说明
+### Rust版本使用说明（推荐）
 1. 下载文件
    - [AutoLogin.exe](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/AutoLogin.exe)
    - [config.yaml](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/config.yaml)
