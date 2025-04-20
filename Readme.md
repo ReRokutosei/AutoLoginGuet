@@ -6,6 +6,19 @@
 [![Platform: Windows](https://img.shields.io/badge/platform-Windows-green)](https://www.microsoft.com/zh-cn/windows)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
+## 目录
+1. [介绍](#介绍)
+2. [功能特性](#功能特性)
+3. [项目结构](#项目结构)
+4. [快速开始](#快速开始)
+   - [配置说明](#配置说明)
+   - [Rust版本使用说明](#Rust版本使用说明)
+   - [Python版本使用说明](#python版本使用说明)
+5. [Rust构建说明](#rust构建说明)
+   - [环境准备](#环境准备)
+   - [编译步骤](#编译步骤)
+6. [注意事项](#注意事项)
+
 ## 介绍
 理论上该项目适用于供应商为[哆点网络](https://doctorcom.com/)的校园网自动登录。这里只面向GUET的用户，其他学校用户请自行修改配置参数。
 
@@ -63,7 +76,7 @@ AutoLoginGuet
 
 ![sign参数获取示意图](image.png)
 
-### Rust版本使用说明 (推荐）
+### Rust版本使用说明
 1. 下载文件
    - [AutoLogin.exe](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/AutoLogin.exe)
    - [config.yaml](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/config.yaml)
