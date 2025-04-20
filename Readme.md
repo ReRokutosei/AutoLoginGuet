@@ -22,15 +22,28 @@
 
 ## 项目结构
 ```
-AutoLogin
-├── 程序文件
-│   ├── AutoLogin.exe        # Rust编译版本
-│   └── AutoLogin.pyw        # Python源码版本
-├── 配置文件
-│   └── config.yaml         # 配置参数文件
-└── 辅助脚本
-    ├── 注册表方式          # 推荐，无需管理员权限
-    └── 计划任务方式        # 需要管理员权限
+AutoLoginGuet
+│   config.yaml               # 配置参数文件
+│
+├───Bat脚本                   # 辅助脚本文件夹（用于设置或取消开机自启）
+│       Py-设置开机自启-注册表.bat            # Python 版本：通过注册表设置开机自启
+│       Py-设置开机自启-计时任务(管理员).bat   # Python 版本：通过计划任务设置开机自启（需管理员权限）
+│       Rust-设置开机自启-注册表.bat          # Rust 版本：通过注册表设置开机自启
+│       Rust-设置开机自启-计时任务(管理员).bat # Rust 版本：通过计划任务设置开机自启（需管理员权限）
+│
+├───Python                    # Python 实现版本文件夹
+│       AutoLogin.pyw         # Python 源码文件
+│       requirements.txt      # Python 依赖包列表
+│
+└───Rust                      # Rust 实现版本文件夹
+    └───Auto_login            # Rust 项目文件夹
+        │   Cargo.toml        # Rust 项目配置文件
+        │
+        ├───resources
+        │       Rust.ico      # Rust 程序图标文件
+        │
+        └───src
+                main.rs       # Rust 入口文件
 ```
 
 ## 快速开始
