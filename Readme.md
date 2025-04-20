@@ -1,9 +1,9 @@
 # 自动登录校园网（哆点网络）
 
 [![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue)](https://www.python.org/)
-[![Rust](https://img.shields.io/badge/rust-1.86+-orange)](https://www.rust-lang.org/)
-[![Yaml](https://img.shields.io/badge/yaml-blue)](https://yaml.org/)
-[![Windows](https://img.shields.io/badge/platform-Windows-green)](https://www.microsoft.com/zh-cn/windows)
+[![Rust 1.86+](https://img.shields.io/badge/rust-1.86+-orange)](https://www.rust-lang.org/)
+[![YAML](https://img.shields.io/badge/yaml-1.2-blue)](https://yaml.org/)
+[![Platform: Windows](https://img.shields.io/badge/platform-Windows-green)](https://www.microsoft.com/zh-cn/windows)
 [![License: MIT](https://img.shields.io/badge/license-MIT-green)](LICENSE)
 
 ## 介绍
@@ -40,11 +40,11 @@ AutoLogin
 2. 配置文件中只需修改 `sign_parameter` 参数
 3. `sign_parameter`参数值获取方法：
 
-    - 打开浏览器，按下F12打开DveTool，选择`网络(network)`，勾选保留日志
+    - 打开浏览器，按下F12打开DevTools，选择`网络(network)`，勾选保留日志
     
-    - 然后在浏览器地址栏输入校园网登录地址`http://10.0.1.5`，登录你的账号，如果已经登录先退出再重新登录
+    - 然后在浏览器地址栏输入校园网登录地址`http://10.0.1.5`，登录你的账号，如果已经登录则需要先退出再重新登录
     
-    - 然后在DveTool中查看请求包，找到名称开头为`login?callback=dr1003&DDDDD`的请求包
+    - 然后在DveTool中查找名称开头为`login?callback=dr1003&DDDDD`的请求包
     
     - `请求网站`的值就是我们要的`sign_parameter`。
 
@@ -90,7 +90,51 @@ AutoLogin
    ```
 
 ## Rust构建说明
-   >必要文件都在仓库了，自己编译即可。~~不想写了~~
+   >~~必要文件都在仓库了，自己编译即可。不想写了~~
+
+如果你希望从源码编译 Rust 版本的程序，请按照以下步骤操作。确保你的系统已经安装了必要的工具链和依赖。
+
+### **环境准备**
+
+1. **安装Rust**  (Windows)
+   访问 [Rust 官方安装页面](https://www.rust-lang.org/tools/install)，下载适用于 Windows 的 `.exe` 安装程序，并按照提示完成安装。
+
+   或者，如果你已经配置了 WSL，可以打开 WSL 终端并执行：
+   ```sh
+   curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+   ```
+
+2. **克隆项目代码**  
+   使用 `git` 克隆项目到本地：
+   ```sh
+   git clone https://github.com/ReRokutosei/AutoLoginGuet.git
+   cd AutoLoginGuet\Rust\Auto_login
+   ```
+
+
+### **编译步骤**
+
+1. **图标文件**  
+  图标文件 `Rust.ico` 位于 `Rust/Auto_login/resources/` 目录下，用于生成带有图标的可执行文件。如果需要自定义图标，请替换该文件并重新编译。
+
+2. **检查依赖**  
+   ```sh
+   cargo check
+   ```
+
+3. **构建 Release 版本**  
+   使用以下命令编译生成优化后的可执行文件：
+   ```sh
+   cargo build --release
+   ```
+   编译完成后，生成的可执行文件将位于 `target/release/` 目录下，文件名为 `AutoLogin.exe`。
+
+4. **验证编译结果**  
+   运行生成的可执行文件以验证其功能：
+   ```sh
+   xcopy /y ..\..\..\config.yaml .\target\release\ # 复制配置文件，记得填写必要参数
+   .\target\release\AutoLogin.exe
+   ```
 
 ## 注意事项
 
