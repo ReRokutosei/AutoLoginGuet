@@ -62,8 +62,13 @@ AutoLoginGuet
 ## 快速开始
 
 ### 配置说明
+#### v1.0
 1. `config.yaml` 需与程序放在同目录
-2. 配置文件中只需修改 `sign_parameter` 参数
+2. yaml配置文件中只需填入学号、密码、网络类型即可
+
+#### v0.9
+1. `config.yaml` 需与程序放在同目录
+2. yaml配置文件中只需修改 `sign_parameter` 参数
 3. `sign_parameter`参数值获取方法：
 
     - 打开浏览器，按下F12打开DevTools，选择`网络(network)`，勾选保留日志
@@ -74,7 +79,7 @@ AutoLoginGuet
     
     - `请求网站`的值就是我们要的`sign_parameter`。
 
-![sign参数获取示意图](image.png)
+    - ![sign参数获取示意图](image.png)
 
 ### Rust版本使用说明
 1. 下载文件
