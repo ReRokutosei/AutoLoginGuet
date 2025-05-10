@@ -30,20 +30,24 @@ impl Default for Config {
 #[derive(Debug, Deserialize)]
 struct NetworkConfig {
     login_ip: String,
-    sign_parameter: String,
     result_return: String,
     signed_in_title: String,
     not_sign_in_title: String,
+    username: String,
+    password: String,
+    network_type: u8,
 }
 
 impl Default for NetworkConfig {
     fn default() -> Self {
         NetworkConfig {
             login_ip: String::new(),
-            sign_parameter: String::new(),
             result_return: String::new(),
             signed_in_title: String::new(),
             not_sign_in_title: String::new(),
+            username: String::new(),
+            password: String::new(),
+            network_type: 1,
         }
     }
 }
@@ -157,6 +161,22 @@ fn load_config() -> Result<Config, Box<dyn std::error::Error>> {
     Ok(config)
 }
 
+fn validate_config(config: &Config) -> Result<(), Box<dyn std::error::Error>> {
+    if config.network.username.is_empty() {
+        return Err("配置文件中缺少用户名(学号)".into());
+    }
+    
+    if config.network.password.is_empty() {
+        return Err("配置文件中缺少密码".into());
+    }
+    
+    if config.network.network_type < 1 || config.network.network_type > 4 {
+        return Err("网络类型必须是1-4之间的整数(1:校园网, 2:移动, 3:联通, 4:电信)".into());
+    }
+    
+    Ok(())
+}
+
 // 修改main函数，添加全局错误处理
 fn main() {
     if let Err(e) = run() {
@@ -169,6 +189,7 @@ fn main() {
 fn run() -> Result<(), Box<dyn std::error::Error>> {
     let start_time = Instant::now();
     let config = load_config()?;
+    validate_config(&config)?;
     let log_manager = LogManager::new(config.logging);
     
     log_manager.clean_old_logs()?;
@@ -193,8 +214,25 @@ fn run() -> Result<(), Box<dyn std::error::Error>> {
                 log_manager.log_event("INFO", &log_message)?;
                 show_notification(&config.notification, "校园网状态", &status)?;
             } else if text.contains(&config.network.not_sign_in_title) {
+                // 构建登录URL
+                let carrier_suffix = match config.network.network_type {
+                    1 => "",
+                    2 => "@cmcc",
+                    3 => "@unicom",
+                    4 => "@telecom",
+                    _ => "",
+                };
+                
+                let username_with_carrier = format!("{}{}", config.network.username, carrier_suffix);
+                let login_url = format!(
+                    "{}drcom/login?callback=dr1003&DDDDD={}&upass={}&0MKKey=123456&R1=0&R2=&R3=0&R6=0&para=00&v6ip=&terminal_type=1&lang=zh-cn&jsVersion=4.2&v=9460&lang=zh",
+                    config.network.login_ip,
+                    username_with_carrier,
+                    urlencoding::encode(&config.network.password)
+                );
+
                 // 尝试登录
-                match client.get(&config.network.sign_parameter)
+                match client.get(&login_url)
                     .timeout(Duration::from_secs(10))
                     .send()
                 {

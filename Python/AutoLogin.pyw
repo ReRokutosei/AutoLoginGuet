@@ -37,6 +37,20 @@ def load_config():
     except Exception as e:
         raise Exception(f"无法加载配置文件: {str(e)}")
 
+def validate_config(config):
+    """
+    验证配置文件中的必要参数
+    """
+    if not config['network']['username']:
+        raise ValueError("配置文件中缺少用户名(学号)")
+    
+    if not config['network']['password']:
+        raise ValueError("配置文件中缺少密码")
+    
+    if not isinstance(config['network']['network_type'], int) or \
+       config['network']['network_type'] not in [1, 2, 3, 4]:
+        raise ValueError("网络类型必须是1-4之间的整数(1:校园网, 2:移动, 3:联通, 4:电信)")
+
 class LogManager:
     def __init__(self, config):
         self.config = config
@@ -86,6 +100,7 @@ class LogManager:
 
 # 更新配置
 config = load_config()
+validate_config(config)
 log_manager = LogManager(config)
 
 # 清理旧日志
@@ -124,8 +139,25 @@ try:
             show_notification("校园网状态", login_status)
             
         elif config['network']['not_sign_in_title'] in req:
+            # 构建登录URL
+            carrier_suffix = {
+                1: "",
+                2: "@cmcc",
+                3: "@unicom",
+                4: "@telecom"
+            }.get(config['network']['network_type'], "")
+            
+            username_with_carrier = f"{config['network']['username']}{carrier_suffix}"
+            login_url = (
+                f"{config['network']['login_ip']}drcom/login"
+                f"?callback=dr1003&DDDDD={username_with_carrier}"
+                f"&upass={requests.utils.quote(config['network']['password'])}"
+                f"&0MKKey=123456&R1=0&R2=&R3=0&R6=0&para=00&v6ip=&terminal_type=1"
+                f"&lang=zh-cn&jsVersion=4.2&v=9460&lang=zh"
+            )
+            
             # 尝试登录
-            r = requests.get(config['network']['sign_parameter'], timeout=10)
+            r = requests.get(login_url, timeout=10)
             req = r.text
             elapsed_time = time.time() - start_time
             
