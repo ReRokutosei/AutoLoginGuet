@@ -83,8 +83,8 @@ AutoLoginGuet
 
 ### Rust版本使用说明
 1. 下载文件
-   - [AutoLogin.exe](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/AutoLogin.exe)
-   - [config.yaml](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/config.yaml)
+   - [AutoLogin.exe](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v1.0/AutoLogin.exe)
+   - [config.yaml](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v1.0/config.yaml)
 
 2. 基础使用
    - 将下载的文件放在同一目录
@@ -92,8 +92,8 @@ AutoLoginGuet
    - 运行 `AutoLogin.exe`
 
 3. 开机自启设置
-   - 下载并使用 [Rust-设置开机自启-注册表.bat](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/Rust_Set_Starup.bat)
-   - 如需取消，使用 [Rust-取消开机自启-注册表.bat](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v0.9/Rust_Cancel_Starup.bat)
+   - 下载并使用 [Rust-设置开机自启-注册表.bat](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v1.0/Rust_Cancel_Starup.bat)
+   - 如需取消，使用 [Rust-取消开机自启-注册表.bat](https://github.com/ReRokutosei/AutoLoginGuet/releases/download/v1.0/Rust_Set_Starup.bat)
 
 ### Python版本使用说明
 1. 克隆并配置项目
@@ -174,6 +174,6 @@ AutoLoginGuet
 - 所有脚本文件需与程序放在同目录
 - 推荐使用注册表方式设置开机自启
 - 请勿将你的配置文件`config.yaml`上传到公共仓库
-- 为避免版权问题，不提供icon图标，请自行准备
+- 为避免版权问题，不提供额外的icon图标，请自行准备
 - Python版本的bat脚本会自动检测安装路径，无需手动配置
 - 如果不再使用，取消开机自启后删除配置文件`config.yaml`、程序文件`AutoLogin`和日志文件`AutoLogin.log`即可
