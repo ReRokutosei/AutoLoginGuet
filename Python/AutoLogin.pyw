@@ -110,10 +110,20 @@ def show_notification(title, message):
 
 time.sleep(random.uniform(0, 5))  # 随机延迟 0 到 5 秒，等待系统稳定
 
+# 添加在全局配置后面
+headers = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9',
+    'Accept-Language': 'zh-CN,zh;q=0.9,en;q=0.8',
+    'Connection': 'keep-alive',
+    'Referer': 'http://10.0.1.5/',
+}
+
 try:
     # 先检查登录状态
     try:
-        r = requests.get(config['network']['login_ip'], timeout=10)
+        session = requests.Session()
+        r = session.get(config['network']['login_ip'], headers=headers, timeout=10)
         req = r.text
         elapsed_time = time.time() - start_time
 
@@ -125,7 +135,11 @@ try:
             
         elif config['network']['not_sign_in_title'] in req:
             # 尝试登录
-            r = requests.get(config['network']['sign_parameter'], timeout=10)
+            r = session.get(
+                config['network']['sign_parameter'], 
+                headers=headers,
+                timeout=10
+            )
             req = r.text
             elapsed_time = time.time() - start_time
             
