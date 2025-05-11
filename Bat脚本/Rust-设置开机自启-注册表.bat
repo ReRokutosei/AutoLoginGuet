@@ -5,21 +5,22 @@ setlocal EnableDelayedExpansion
 set "current_dir=%~dp0"
 set "exe_name=AutoLogin.exe"
 set "vbs_name=AutoLogin.vbs"
+set "full_exe_path=%current_dir%%exe_name%"
 
 :: 检查文件存在性
-if not exist "%current_dir%%exe_name%" (
+if not exist "!full_exe_path!" (
     echo Error: %exe_name% not found in current directory.
     pause
     exit /b 1
 )
 
-:: 构建 VBS 文件内容
+:: 构建 VBS 文件内容，使用完整路径
 set "vbs_path=%current_dir%%vbs_name%"
 (
     echo Set WshShell = CreateObject^("WScript.Shell"^)
-    echo WshShell.Run chr^(34^) ^& "%exe_name%" ^& chr^(34^), 0, False
+    echo WshShell.Run chr^(34^) ^& "!full_exe_path!" ^& chr^(34^), 0, False
     echo Set WshShell = Nothing
-) > "%vbs_path%"
+) > "!vbs_path!"
 
 :: 检查 VBS 文件是否生成成功
 if not exist "%vbs_path%" (
