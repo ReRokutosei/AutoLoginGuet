@@ -1,7 +1,5 @@
-**/target
+/target
 **/*.rs.bk
-*.bk
-*.tmp
-*.log
-*~
-*.exe
+Cargo.lock
+docs/TODO.md
+.github/

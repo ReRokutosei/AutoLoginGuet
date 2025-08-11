@@ -1,0 +1,29 @@
+[package]
+name = "AutoLoginGUET"
+version = "1.0.0"
+edition = "2024"
+
+[dependencies]
+dioxus = { version = "0.5.6", features = ["desktop"] }
+serde = { version = "1.0.219", features = ["derive"] }
+tokio = { version = "1.47.1", features = ["full"] }
+reqwest = "0.12.22"
+chrono = "0.4.41"
+urlencoding = "2.1.3"
+winreg = "0.52.0"
+notify-rust = "4.11.3"
+toml = "0.9.5"
+aes = "0.8.4"
+cbc = "0.1.2"
+rand = "0.8.5"
+sha2 = "0.10.9"
+base64 = "0.21.7"
+futures = "0.3.31"
+win-msgbox = "0.2.1"
+
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1.12"
+
+[[bin]]
+name = "AutoLoginGUET"
+path = "src/main.rs"
