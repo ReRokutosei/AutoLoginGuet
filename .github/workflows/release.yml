@@ -1,0 +1,71 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Get version from tag
+        id: get_version
+        run: |
+          VERSION=$(echo $GITHUB_REF | cut -d / -f 3)
+          echo "VERSION=$VERSION" >> $GITHUB_ENV
+
+      - name: Read CHANGELOG.md
+        id: changelog
+        run: |
+          # Extract the changelog section for the current version
+          VERSION=${{ env.VERSION }}
+          CHANGELOG=$(sed -n "/## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '$d' | tail -n +2)
+          # If no version-specific changelog found, get all content except first lines
+          if [ -z "$CHANGELOG" ]; then
+            CHANGELOG=$(tail -n +7 CHANGELOG.md)
+          fi
+          # Save to file to handle multi-line content
+          echo "$CHANGELOG" > CHANGELOG_TEMP.md
+
+      - name: Create Release
+        id: create_release
+        uses: softprops/action-gh-release@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          tag_name: ${{ github.ref }}
+          name: Release ${{ env.VERSION }}
+          body_path: CHANGELOG_TEMP.md
+          draft: false
+          prerelease: false
+
+  build-windows:
+    needs: create-release
+    runs-on: windows-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Install Rust
+        uses: actions-rs/toolchain@v1
+        with:
+          toolchain: stable
+          target: x86_64-pc-windows-msvc
+          override: true
+
+      - name: Build
+        run: cargo build --release --target x86_64-pc-windows-msvc
+
+      - name: Upload Release Asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }}
+          asset_path: target/x86_64-pc-windows-msvc/release/AutoLoginGUET.exe
+          asset_name: AutoLoginGUET-amd64.exe
+          asset_content_type: application/octet-stream
