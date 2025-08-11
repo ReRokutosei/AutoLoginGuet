@@ -254,7 +254,7 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                         }
                         Err(e) => {
                             let elapsed = start_time.elapsed().as_secs_f64();
-                            let log_message = format!("Login request failed: {}. Elapsed time: {:.2} seconds.", e, elapsed);
+                            let _log_message = format!("Login request failed: {}. Elapsed time: {:.2} seconds.", e, elapsed);
                             // 判断是否为网络连接问题
                             if e.to_string().contains("error sending request for url") {
                                 let status_msg = format!("网络连接失败，请检查网线连接或代理设置，本次用时 {:.2} 秒", elapsed);
