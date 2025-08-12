@@ -53,7 +53,7 @@ impl From<ConfigData> for GuiConfig {
     fn from(config: ConfigData) -> Self {
         GuiConfig {
             username: config.account.username,
-            password: config.account.encrypted_password,
+            password: String::new(), // 不直接显示加密密码
             isp: if config.account.isp.is_empty() {
                 "校园网".to_string()
             } else {
@@ -171,7 +171,7 @@ fn app() -> Element {
         gui_config.write().username = e.value().clone();
     };
     
-    let on_password_input = move |e: Event<FormData>| {
+    let _on_password_input = move |e: Event<FormData>| {
         gui_config.write().password = e.value().clone();
     };
     
@@ -246,7 +246,7 @@ fn app() -> Element {
             spawn(async move {
                 let mut message = message.clone();
                 let mut session_logs = session_logs.clone();
-                let mut gui_config = gui_config.clone();
+                let gui_config = gui_config.clone();
                 let mut logs = logs.clone();
                 
                 let config_to_login: ConfigData = (&*gui_config.read()).into();
@@ -283,8 +283,6 @@ fn app() -> Element {
                                 return;
                             }
                         };
-                        
-                        gui_config.write().password = config.account.username.clone();
                         
                         let log_manager = LogManager::new(config.logging.clone());
                         match log_manager.read_logs() {
@@ -344,8 +342,10 @@ fn app() -> Element {
                 div { class: "form-row",
                     input {
                         r#type: "password",
-                        value: "{gui_config().password}",
-                        oninput: on_password_input,
+                        value: "{gui_config.read().password}",
+                        oninput: move |e: Event<FormData>| {
+                            gui_config.write().password = e.value().clone();
+                        },
                         placeholder: "密码"
                     }
                 }
