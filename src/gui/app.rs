@@ -171,11 +171,6 @@ fn app() -> Element {
         gui_config.write().username = e.value().clone();
     };
     
-    let _on_password_input = move |e: Event<FormData>| {
-        gui_config.write().password = e.value().clone();
-    };
-    
-    
     let on_isp_change = move |e: Event<FormData>| {
         let value = e.value().clone();
         gui_config.write().isp = if value.is_empty() { 
