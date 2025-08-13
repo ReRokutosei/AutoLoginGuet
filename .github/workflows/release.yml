@@ -7,7 +7,7 @@ on:
 
 jobs:
   build:
-    runs-on: windows-latest
+    runs-on: windows-2022
 
     steps:
       - name: Checkout
@@ -20,6 +20,27 @@ jobs:
           target: x86_64-pc-windows-msvc
           override: true
 
+      - name: Install Inno Setup
+        run: |
+          # Inno Setup 简体中文翻译文件暂时仅支持到6.4.0+
+          curl -OL https://files.jrsoftware.org/is/6/innosetup-6.4.1.exe
+          .\innosetup-6.4.1.exe /VERYSILENT /SUPPRESSMSGBOXES /NORESTART
+          "C:\Program Files (x86)\Inno Setup 6" >> $env:GITHUB_PATH
+        shell: pwsh
+
+      - name: Update version in Inno Setup script
+        run: |
+          # 从Cargo.toml中提取版本号
+          $CARGO_VERSION = Select-String -Path Cargo.toml -Pattern '^version = "(.+)"' | ForEach-Object { $_.Matches.Groups[1].Value }
+          (Get-Content installer/InnoSetup.iss) -replace '#define MyAppVersion ".*"', "#define MyAppVersion `"$CARGO_VERSION`"" | Set-Content installer/InnoSetup.iss
+        shell: pwsh
+
+      # 复制自定义的ChineseSimplified.isl文件
+      - name: Copy custom Chinese language file
+        run: |
+          Copy-Item "installer\ChineseSimplified.isl" "C:\Program Files (x86)\Inno Setup 6\Default.isl" -Force
+        shell: pwsh
+
       - name: Build
         run: cargo build --release --target x86_64-pc-windows-msvc
 
@@ -27,33 +48,48 @@ jobs:
         id: get_version
         run: |
           $VERSION = $env:GITHUB_REF -replace 'refs/tags/', ''
-          echo "VERSION=$VERSION" >> $env:GITHUB_ENV
+          "VERSION=$VERSION" >> $env:GITHUB_ENV
         shell: pwsh
 
       - name: Extract changelog for version
         id: changelog
         run: |
           $VERSION = $env:VERSION
-          $CHANGELOG_CONTENT = (Get-Content CHANGELOG.md -Raw) -split "## \["
-          $VERSION_ENTRY = $CHANGELOG_CONTENT | Where-Object { $_.StartsWith("$VERSION") }
-          if ($VERSION_ENTRY) {
-            $CHANGELOG_TEXT = "## [$VERSION_ENTRY" | Out-String
+          $CLEAN_VERSION = $VERSION -replace '^v', ''
+          $CHANGELOG_CONTENT = Get-Content CHANGELOG.md -Raw -Encoding UTF8
+          $MAJOR_VERSION = $CLEAN_VERSION -replace '\.(\d+).*', ''
+          $PATTERN = "(## \[$MAJOR_VERSION\.[\d\.]+\].*?)(?=## \[.*\]|\Z)"
+          $MATCHES = [regex]::Matches($CHANGELOG_CONTENT, $PATTERN, [System.Text.RegularExpressions.RegexOptions]::Singleline)
+          
+          if ($MATCHES.Count -gt 0) {
+            $CHANGELOG_TEXT = ""
+            foreach ($MATCH in $MATCHES) {
+              $CHANGELOG_TEXT += $MATCH.Groups[1].Value.Trim() + "`n`n"
+            }
           } else {
-            $CHANGELOG_TEXT = "No changelog entry found for version $VERSION"
+            $CHANGELOG_TEXT = "No changelog entry found for major version $MAJOR_VERSION"
           }
-          # 将内容写入文件，供后续步骤使用
           $CHANGELOG_TEXT | Out-File -FilePath "RELEASE_NOTE.md" -Encoding UTF8
         shell: pwsh
 
-      - name: Rename executable
+      - name: Build Installer
         run: |
-          mv target/x86_64-pc-windows-msvc/release/AutoLoginGUET.exe target/x86_64-pc-windows-msvc/release/AutoLoginGUET-amd64.exe
+          cd installer
+          ISCC.exe InnoSetup.iss
+        shell: pwsh
+
+      - name: List generated installer files
+        run: |
+          cd installer
+          Get-ChildItem -Path . -Include *.exe -Recurse | ForEach-Object { Write-Output $_.FullName }
+          Write-Output "Current directory contents:"
+          Get-ChildItem -Path . -Force
         shell: pwsh
 
       - name: Release
         uses: softprops/action-gh-release@v2
         with:
-          token: ${{ secrets.mykey }}
+          token: ${{ secrets.GITHUB_TOKEN }}
           body_path: ./RELEASE_NOTE.md
           files: |
-            target/x86_64-pc-windows-msvc/release/AutoLoginGUET-amd64.exe
+            AutoLoginGUET-*-installer.exe
