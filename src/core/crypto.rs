@@ -16,6 +16,7 @@ type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
 fn derive_key(password: &str) -> [u8; 32] {
     let mut hasher = Sha256::new();
     hasher.update(password.as_bytes());
+    hasher.update(b"AutoLoginGUET_SALT_2025");
     let result = hasher.finalize();
     let mut key = [0u8; 32];
     key.copy_from_slice(&result);
