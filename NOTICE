@@ -1,17 +1,79 @@
-This project includes software and assets from third parties.
+NOTICE  
+This project includes software and assets from third parties.  
 
-IconPark Icons
-Copyright (c) 2021-present ByteDance Inc.
-https://github.com/bytedance/IconPark
+================================================================================  
 
-Licensed under the Apache License, Version 2.0 (the "License");
-you may not use these files except in compliance with the License.
-You may obtain a copy of the License at
+IconPark Icons  
+Copyright (c) 2021-present ByteDance Inc.  
+Source: https://github.com/bytedance/IconPark  
 
-    http://www.apache.org/licenses/LICENSE-2.0
+Licensed under the Apache License, Version 2.0 (the "License");  
+you may not use this work except in compliance with the License.  
+You may obtain a copy of the License at:  
 
-Unless required by applicable law or agreed to in writing, software
-distributed under the License is distributed on an "AS IS" BASIS,
-WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-See the License for the specific language governing permissions and
-limitations under the License.
+    http://www.apache.org/licenses/LICENSE-2.0  
+
+Unless required by applicable law or agreed to in writing, software  
+distributed under the License is distributed on an "AS IS" BASIS,  
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.  
+See the License for the specific language governing permissions and limitations.  
+
+--------------------------------------------------------------------------------  
+
+Inno Setup Simplified Chinese Translation File  
+File: installer\ChineseSimplified.isl  
+Source: https://github.com/kira-96/Inno-Setup-Chinese-Simplified-Translation  
+
+Copyright (c) 2019–2025 kirakira  
+Licensed under the MIT License.  
+You may obtain a copy of the License at:  
+
+    https://mit-license.org/  
+
+Permission is hereby granted, free of charge, to any person obtaining a copy  
+of this software and associated documentation files (the "Software"), to deal  
+in the Software without restriction, including without limitation the rights to  
+use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies  
+of the Software, and to permit persons to whom the Software is furnished to do  
+so, subject to the following conditions:  
+
+The above copyright notice and this permission notice shall be included in all  
+copies or substantial portions of the Software.  
+
+================================================================================  
+
+本项目包含来自第三方的软件和资产。
+
+================================================================================  
+
+IconPark 图标  
+文件：[icon.ico](assets\icon.ico)
+版权所有 (c) 2021-至今 字节跳动有限公司  
+来源：https://github.com/bytedance/IconPark  
+
+根据 Apache 许可证 2.0 版（“许可证”）授权；  
+除非遵守该许可证，否则不得使用本作品。  
+您可在以下地址获取许可证副本：  
+
+    http://www.apache.org/licenses/LICENSE-2.0  
+
+除非适用法律要求或书面同意，否则依据该许可证分发的软件  
+按“原样”提供，不提供任何明示或暗示的担保或条件。  
+有关权限和限制的详细信息，请参阅许可证。  
+
+--------------------------------------------------------------------------------  
+
+Inno Setup 简体中文翻译文件  
+文件：[ChineseSimplified.isl](installer\ChineseSimplified.isl)
+来源：https://github.com/kira-96/Inno-Setup-Chinese-Simplified-Translation  
+
+版权所有 (c) 2019–2025 kirakira  
+遵循 MIT 许可证。  
+您可在以下地址获取许可证副本：  
+
+    https://mit-license.org/  
+
+特此免费授予任何获得本软件及相关文档文件（“软件”）的人，  
+在不受限制的情况下使用、复制、修改、合并、发布、分发、再许可和/或销售  
+本软件副本的权利，并允许向其提供本软件的人同样行事，  
+前提是所有副本或实质性部分均包含原始版权声明和许可声明。
