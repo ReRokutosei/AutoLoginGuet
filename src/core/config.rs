@@ -3,6 +3,7 @@ use std::fs;
 use std::path::Path;
 use toml;
 use std::env;
+use base64::{Engine as _, engine::general_purpose};
 
 use crate::core::network::NetworkConfig;
 
@@ -125,7 +126,23 @@ pub fn save_config(config: &ConfigData) -> Result<(), String> {
 }
 
 pub fn is_config_complete(config: &ConfigData) -> bool {
-    if config.account.username.is_empty() || config.account.encrypted_password.is_empty() {
+    if config.account.username.is_empty() {
+        eprintln!("错误：用户名不能为空");
+        return false;
+    }
+    
+    if config.account.encrypted_password.is_empty() {
+        eprintln!("错误：密码不能为空");
+        return false;
+    }
+    
+    if !config.account.username.chars().all(|c| c.is_ascii_digit()) {
+        eprintln!("错误：学号格式不正确");
+        return false;
+    }
+    
+    if general_purpose::STANDARD.decode(&config.account.encrypted_password).is_err() {
+        eprintln!("错误：密码格式不正确");
         return false;
     }
     
