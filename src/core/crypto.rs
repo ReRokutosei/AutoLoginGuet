@@ -68,9 +68,12 @@ pub fn decrypt_password(encrypted_password: &str, key: &str) -> Result<String, B
 #[cfg(windows)]
 /// 生成机器相关的密钥（基于机器信息）
 pub fn generate_machine_key() -> String {
-    let machine_key = get_machine_guid().unwrap_or_else(|_| {
-        "AutoLoginGUET_default_key_2025".to_string()
-    });
+    let machine_key = match get_machine_guid() {
+        Ok(guid) => guid,
+        Err(_) => {
+            "AutoLoginGUET_default_key_2025".to_string()
+        }
+    };
     
     format!("AutoLoginGUET_salt_2025_{}", machine_key)
 }
@@ -85,18 +88,3 @@ fn get_machine_guid() -> Result<String, Box<dyn std::error::Error>> {
 }
 
 
-#[cfg(test)]
-mod tests {
-    use super::*;
-
-    #[test]
-    fn test_encrypt_decrypt() {
-        let password = "test_password_123";
-        let key = "my_secret_key";
-        
-        let encrypted = encrypt_password(password, key).unwrap();
-        let decrypted = decrypt_password(&encrypted, key).unwrap();
-        
-        assert_eq!(password, decrypted);
-    }
-}

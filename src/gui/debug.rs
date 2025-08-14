@@ -5,6 +5,8 @@ use crate::core::config::ConfigData;
 use crate::core::network::NetworkManager;
 use crate::core::{decrypt_password, generate_machine_key};
 
+const DEFAULT_LOGIN_IP: &str = "http://10.0.1.5/";
+
 #[derive(Clone, PartialEq, Default)]
 pub struct DebugInfo {
     pub request_url: String,
@@ -46,10 +48,10 @@ pub fn perform_debug_login(
         &config_to_login.account.isp
     };
 
-    debug_info.write().request_url = "http://10.0.1.5/".to_string();
+    debug_info.write().request_url = DEFAULT_LOGIN_IP.to_string();
     debug_info.write().request_params = format!("callback=dr1003&DDDDD={}{}&upass=******&0MKKey=123456", config_to_login.account.username, actual_isp);
 
-    debug_output.push_str(&format!("请求URL: {}\n", "http://10.0.1.5/"));
+    debug_output.push_str(&format!("请求URL: {}\n", DEFAULT_LOGIN_IP));
     debug_output.push_str(&format!("实际发送的请求参数: callback=dr1003&DDDDD={}{}&upass={}&0MKKey=123456\n", config_to_login.account.username, actual_isp, password));
     debug_output.push_str("发送登录请求中...\n");
     
@@ -84,7 +86,7 @@ pub fn perform_debug_network_request(
             &config_to_login.account.isp
         };
         
-        debug_info.write().request_url = "http://10.0.1.5/".to_string();
+        debug_info.write().request_url = DEFAULT_LOGIN_IP.to_string();
         debug_info.write().request_params = format!("callback=dr1003&DDDDD={}{}&upass=******&0MKKey=123456", config_to_login.account.username, actual_isp);
         
         debug_output.push_str(&format!("使用客户端配置: {:?}\n", config_to_login.network));

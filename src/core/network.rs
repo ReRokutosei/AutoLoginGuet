@@ -3,7 +3,16 @@ use std::time::Duration;
 use serde::{Deserialize, Serialize};
 use urlencoding::encode;
 
-/// 网络状态枚举，用于更准确地表示当前网络连接状态
+const EXTERNAL_SITES: [&str; 5] = [
+    "https://www.baidu.com",
+    "https://www.qq.com",
+    "https://www.sina.com.cn",
+    "https://www.alibaba.com",
+    "https://www.taobao.com",
+];
+
+const DEFAULT_USER_AGENT: &str = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36";
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum NetworkStatus {
     /// 已登录校园网且能访问广域网
@@ -78,16 +87,8 @@ impl NetworkManager {
 
     /// 检查外部网络连接状态
     async fn check_external_connectivity(&self) -> bool {
-        let external_sites = [
-            "https://www.baidu.com",
-            "https://www.qq.com",
-            "https://www.sina.com.cn",
-            "https://www.alibaba.com",
-            "https://www.taobao.com",
-        ];
-        
         let mut tasks = Vec::new();
-        for url in &external_sites {
+        for url in &EXTERNAL_SITES {
             let client = self.client.clone();
             let url = url.to_string();
             tasks.push(tokio::spawn(async move {
@@ -105,7 +106,7 @@ impl NetworkManager {
         }
         
         let results = futures::future::join_all(tasks).await;
-        results.into_iter().any(|result| result.unwrap_or(false))
+        results.into_iter().map(|r| r.unwrap_or(false)).any(|x| x)
     }
 
 
@@ -175,7 +176,7 @@ impl NetworkManager {
         
         let request_builder = client
             .get(&url)
-            .header("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36")
+            .header("User-Agent", DEFAULT_USER_AGENT)
             .header("Referer", &self.config.login_ip);
             
         let response = request_builder

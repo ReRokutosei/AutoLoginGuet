@@ -7,6 +7,9 @@ use base64::{Engine as _, engine::general_purpose};
 
 use crate::core::network::NetworkConfig;
 
+const DEFAULT_LOG_FILE_PATH: &str = "./AutoLogin.log";
+const CONFIG_FILE_NAME: &str = "config.toml";
+
 #[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
 pub struct AccountConfig {
     pub username: String,
@@ -35,7 +38,7 @@ impl Default for LoggingConfig {
     fn default() -> Self {
         LoggingConfig {
             enable_logging: true,
-            log_file_path: "./AutoLogin.log".to_string(),
+            log_file_path: DEFAULT_LOG_FILE_PATH.to_string(),
             info_log_retention_days: 7,
         }
     }
@@ -91,8 +94,8 @@ impl Default for NotificationConfig {
 /// 配置文件操作函数
 pub async fn load_config() -> Result<ConfigData, String> {
     let exe_path = std::env::current_exe().map_err(|e| e.to_string())?;
-    let exe_dir = exe_path.parent().unwrap();
-    let config_path = exe_dir.join("config.toml");
+    let exe_dir = exe_path.parent().ok_or("无法获取可执行文件目录")?;
+    let config_path = exe_dir.join(CONFIG_FILE_NAME);
     
     if !config_path.exists() {
         let default_config = ConfigData::default();
@@ -104,12 +107,16 @@ pub async fn load_config() -> Result<ConfigData, String> {
     
     if config.logging.enable_logging {
         let log_path = Path::new(&config.logging.log_file_path);
-        if log_path.to_str().unwrap().starts_with("./") || log_path.to_str().unwrap().starts_with("../") {
-            if let Ok(stripped_path) = log_path.strip_prefix("./") {
-                config.logging.log_file_path = exe_dir.join(stripped_path).to_string_lossy().to_string();
-            } else if let Ok(stripped_path) = log_path.strip_prefix("../") {
-                config.logging.log_file_path = exe_dir.join(stripped_path).to_string_lossy().to_string();
+        if let Some(log_path_str) = log_path.to_str() {
+            if log_path_str.starts_with("./") || log_path_str.starts_with("../") {
+                if let Ok(stripped_path) = log_path.strip_prefix("./") {
+                    config.logging.log_file_path = exe_dir.join(stripped_path).to_string_lossy().to_string();
+                } else if let Ok(stripped_path) = log_path.strip_prefix("../") {
+                    config.logging.log_file_path = exe_dir.join(stripped_path).to_string_lossy().to_string();
+                }
             }
+        } else {
+            return Err("日志路径格式错误".to_string());
         }
     }
     
@@ -118,8 +125,8 @@ pub async fn load_config() -> Result<ConfigData, String> {
 
 pub fn save_config(config: &ConfigData) -> Result<(), String> {
     let exe_path = env::current_exe().map_err(|e| e.to_string())?;
-    let exe_dir = exe_path.parent().unwrap();
-    let config_path = exe_dir.join("config.toml");
+    let exe_dir = exe_path.parent().ok_or("无法获取可执行文件目录")?;
+    let config_path = exe_dir.join(CONFIG_FILE_NAME);
     
     let toml_content = toml::to_string_pretty(config).map_err(|e| e.to_string())?;
     fs::write(config_path, toml_content).map_err(|e| e.to_string())
