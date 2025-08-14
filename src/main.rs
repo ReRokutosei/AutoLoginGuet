@@ -9,7 +9,8 @@ use crate::core::config::{load_config, is_config_complete};
 use crate::core::logging::LogManager;
 use crate::core::notification::NotificationManager;
 use crate::core::network::{NetworkManager, NetworkStatus};
-use crate::core::{decrypt_password, generate_machine_key};
+use crate::core::crypto::{decrypt_password, generate_machine_key};
+use regex::Regex;
 
 #[cfg(windows)]
 fn set_auto_start(enabled: bool, _config: &core::config::ConfigData) -> Result<(), Box<dyn std::error::Error>> {
@@ -105,8 +106,7 @@ fn show_webview2_installation_guide() {
     use win_msgbox::Okay;
     let _ = win_msgbox::show::<Okay>(
         "未检测到 WebView2 Runtime，程序需要此组件才能正常运行。\n\
-         如果您已安装 Microsoft Edge 浏览器，则应该可以正常运行。\n\
-         否则请访问以下链接下载并安装 WebView2 Runtime：\n\
+         请访问微软官网下载并安装 WebView2 Runtime：\n\
          https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/\
     ");
 }
@@ -154,6 +154,26 @@ fn silent_login() -> Result<bool, String> {
     })
 }
 
+
+fn clean_sensitive_info(error: &str) -> String {
+    if error.contains("drcom/login") {
+        let re_ddddd = match Regex::new(r"DDDDD=[^&]*") {
+            Ok(regex) => regex,
+            Err(_) => return error.to_string(),
+        };
+        let re_upass = match Regex::new(r"upass=[^&]*") {
+            Ok(regex) => regex,
+            Err(_) => return error.to_string(),
+        };
+        
+        let cleaned = re_ddddd.replace_all(error, "DDDDD=***");
+        let cleaned = re_upass.replace_all(&cleaned, "upass=***");
+        cleaned.to_string()
+    } else {
+        error.to_string()
+    }
+}
+
 pub async fn silent_login_with_config(config: core::config::ConfigData) -> Result<bool, String> {
     let start_time = std::time::Instant::now();
     let log_manager = LogManager::new(config.logging.clone());
@@ -175,7 +195,7 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
             match status {
                 NetworkStatus::LoggedInAndConnected => {
                     let log_message = format!("Network status: Device logged in and connected to WAN. Elapsed time: {:.2} seconds.", elapsed);
-                    let status_msg = format!("已登录！网络连接正常\n用时{:.2}秒", elapsed);
+                    let status_msg = format!("已登录！网络连接正常  用时{:.2}秒", elapsed);
                     if let Err(e) = log_manager.log_event("INFO", &log_message) {
                         return Err(format!("日志记录失败: {}", e));
                     }
@@ -206,7 +226,7 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                             if login_text.contains("注销页") || login_text.contains("认证成功页") || login_text.contains("Dr.COMWebLoginID_3.htm") || login_text.contains("\"result\":1") {
                                 // 登录成功
                                 let log_message = format!("Login successful. Elapsed time: {:.2} seconds.", elapsed);
-                                let status_msg = format!("登录成功！已接入广域网\n用时{:.2}秒", elapsed);
+                                let status_msg = format!("登录成功！已接入广域网  用时{:.2}秒", elapsed);
                                 if let Err(e) = log_manager.log_event("INFO", &log_message) {
                                     return Err(format!("日志记录失败: {}", e));
                                 }
@@ -226,9 +246,9 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                                 
                                 let log_message = format!("Login failed: {}. Elapsed time: {:.2} seconds.", error_type, elapsed);
                                 let status_msg = if error_type.contains("Account or password") {
-                                    format!("登录失败！请检查账号或密码\n用时{:.2}秒", elapsed)
+                                    format!("登录失败！请检查账号或密码  用时{:.2}秒", elapsed)
                                 } else {
-                                    format!("登录失败！请检查登录信息\n用时{:.2}秒", elapsed)
+                                    format!("登录失败！请检查登录信息  用时{:.2}秒", elapsed)
                                 };
                                 
                                 if let Err(e) = log_manager.log_event("WARNING", &log_message) {
@@ -242,7 +262,7 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                                 // 其他登录失败情况
                                 let log_message = format!("Login failed: Unknown error. Response snippet: {}. Elapsed time: {:.2} seconds.", 
                                                         &login_text[..std::cmp::min(200, login_text.len())], elapsed);
-                                let status_msg = format!("登录失败，未知错误！\n用时{:.2}秒", elapsed);
+                                let status_msg = format!("登录失败，未知错误！  用时{:.2}秒", elapsed);
                                 if let Err(e) = log_manager.log_event("WARNING", &log_message) {
                                     return Err(format!("日志记录失败: {}", e));
                                 }
@@ -254,11 +274,12 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                         }
                         Err(e) => {
                             let elapsed = start_time.elapsed().as_secs_f64();
-                            let _log_message = format!("Login request failed: {}. Elapsed time: {:.2} seconds.", e, elapsed);
+                            let cleaned_error = clean_sensitive_info(&e);
+                            let _log_message = format!("Login request failed: {}. Elapsed time: {:.2} seconds.", cleaned_error, elapsed);
                             // 判断是否为网络连接问题
                             if e.to_string().contains("error sending request for url") {
                                 let status_msg = format!("网络连接失败，请检查网线或代理\n用时{:.2}秒", elapsed);
-                                let detailed_msg = format!("网络连接失败: {}. Elapsed time: {:.2} seconds.", e, elapsed);
+                                let detailed_msg = format!("网络连接失败: {}. Elapsed time: {:.2} seconds.", cleaned_error, elapsed);
                                 
                                 if let Err(log_err) = log_manager.log_event("ERROR", &detailed_msg) {
                                     return Err(format!("日志记录失败: {}", log_err));
@@ -269,7 +290,7 @@ pub async fn silent_login_with_config(config: core::config::ConfigData) -> Resul
                                 }
                             } else {
                                 let status_msg = format!("登录请求失败，用时{:.2}秒", elapsed);
-                                let detailed_msg = format!("登录请求失败: {}. Elapsed time: {:.2} seconds.", e, elapsed);
+                                let detailed_msg = format!("登录请求失败: {}. Elapsed time: {:.2} seconds.", cleaned_error, elapsed);
                                 
                                 if let Err(log_err) = log_manager.log_event("ERROR", &detailed_msg) {
                                     return Err(format!("日志记录失败: {}", log_err));
