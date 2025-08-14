@@ -1,10 +1,11 @@
 //! 核心模块
 
 pub mod config;
+pub mod crypto;
 pub mod logging;
 pub mod network;
 pub mod notification;
-pub mod crypto;
+pub mod config_manager;
 
 pub use config::{load_config, save_config, is_config_complete};
 pub use network::NetworkManager;
