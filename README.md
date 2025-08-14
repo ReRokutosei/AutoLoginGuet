@@ -22,10 +22,17 @@
 - 🔕 **静默模式**: 也可无窗口静默启动
 - 🔐 **密码加密**: 使用 AES 加密存储用户密码
 
-## GUI 示意图
+## 示意图
 
 <img src="assets/GUI.png" alt="GUI示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
 
+***
+
+<img src="assets/notification.png" alt="通知示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
+
+***
+
+<img src="assets/config.png" alt="配置文件示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
 
 ## 安装
 
@@ -48,8 +55,7 @@
 1. 输入学号和密码
 2. 选择网络运营商
 3. 点击"开机自启"
-4. 点击"保存配置"
-5. 点击"立即登录"
+4. 点击"立即登录"
 
 ### 静默模式
 
@@ -84,14 +90,17 @@
 src/
 ├── core/
 │   ├── config.rs        # 配置管理
+│   ├── config_manager.rs # 配置管理器
 │   ├── crypto.rs        # 密码加密解密
 │   ├── logging.rs       # 日志管理
+│   ├── mod.rs           # 模块声明
 │   ├── network.rs       # 网络请求
 │   └── notification.rs  # 系统通知
 ├── gui/
 │   ├── app.rs           # 主应用逻辑
 │   ├── components.rs    # 界面组件
-│   └── debug.rs         # 调试模块
+│   ├── debug.rs         # 调试模块
+│   └── mod.rs           # 模块声明
 └── main.rs              # 程序入口
 ```
 

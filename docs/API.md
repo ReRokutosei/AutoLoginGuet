@@ -21,12 +21,13 @@ AutoLoginGUET 是一个使用 Rust 编写的轻量级工具，用于自动登录
 ```
 src/
 ├── core/              # 核心功能模块
-│   ├── config.rs        # 配置管理
+│   ├── config.rs        # 配置定义和基本操作
+│   ├── config_manager.rs # 配置管理器
 │   ├── crypto.rs        # 密码加密解密
 │   ├── logging.rs       # 日志管理
+│   ├── mod.rs           # 核心模块导出
 │   ├── network.rs       # 网络请求
-│   ├── notification.rs  # 系统通知
-│   └── mod.rs           # 核心模块导出
+│   └── notification.rs  # 系统通知
 ├── gui/               # 图形界面模块
 │   ├── app.rs           # 主应用逻辑
 │   ├── components.rs    # 界面组件
@@ -116,7 +117,20 @@ graph TD
 - `save_config()` - 保存配置
 - `is_config_complete()` - 验证配置完整性
 
-#### 3.2.2 crypto.rs - 密码加密解密
+#### 3.2.2 config_manager.rs - 配置管理器
+
+负责配置的高级管理功能，包括配置的创建、更新和删除等操作。
+
+主要结构体：
+- `ConfigManager` - 配置管理器
+
+主要函数：
+- `new()` - 创建新的配置管理器实例
+- `load()` - 加载配置
+- `save()` - 保存配置
+- `update()` - 更新配置
+
+#### 3.2.3 crypto.rs - 密码加密解密
 
 负责用户密码的加密和解密操作。
 
@@ -126,7 +140,7 @@ graph TD
 - `generate_machine_key()` - 生成机器相关密钥
 - `get_machine_guid()` - 获取Windows机器GUID
 
-#### 3.2.3 logging.rs - 日志管理
+#### 3.2.4 logging.rs - 日志管理
 
 负责日志的记录和管理。
 
@@ -138,7 +152,7 @@ graph TD
 - `clean_old_logs()` - 清理旧日志
 - `read_logs()` - 读取日志
 
-#### 3.2.4 network.rs - 网络请求
+#### 3.2.5 network.rs - 网络请求
 
 负责网络状态检查和登录请求。
 
@@ -154,7 +168,7 @@ graph TD
 - `attempt_login_with_credentials()` - 使用凭据尝试登录
 - `try_drcom_login()` - DRCOM登录实现
 
-#### 3.2.5 notification.rs - 系统通知
+#### 3.2.6 notification.rs - 系统通知
 
 负责系统通知的显示。
 
