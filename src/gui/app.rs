@@ -2,13 +2,28 @@
 
 use dioxus::prelude::*;
 use dioxus::desktop::{Config, WindowBuilder};
-use crate::core::config::{ConfigData, save_config, AccountConfig, SettingsConfig};
+use crate::core::config::{ConfigData, AccountConfig, SettingsConfig};
 use crate::core::network::{NetworkManager, NetworkStatus};
 use crate::core::logging::LogManager;
 use crate::gui::debug::perform_debug_network_request;
 use crate::core::{encrypt_password, generate_machine_key};
-use base64;
+use crate::core::config_manager::ConfigManager;
 use base64::Engine;
+
+#[derive(Clone, PartialEq, Default)]
+pub struct GuiConfigWithData {
+    pub gui_config: GuiConfig,
+    pub encrypted_password: String,
+}
+
+impl From<ConfigData> for GuiConfigWithData {
+    fn from(config: ConfigData) -> Self {
+        GuiConfigWithData {
+            gui_config: GuiConfig::from(config.clone()),
+            encrypted_password: config.account.encrypted_password,
+        }
+    }
+}
 
 const GUET_LOGO: &[u8] = include_bytes!("../../assets/guet.jpg");
 
@@ -97,6 +112,7 @@ pub fn gui_config_to_config_data(gui_config: &GuiConfig) -> ConfigData {
 
 fn app() -> Element {
     let mut gui_config = use_signal(|| GuiConfig::default());
+    let mut gui_config_with_data = use_signal(|| GuiConfigWithData::default());
     let mut message = use_signal(String::new);
     let mut logs = use_signal(String::new);
     let session_logs = use_signal(String::new);
@@ -107,8 +123,9 @@ fn app() -> Element {
         spawn(async move {
             let config_result = crate::core::config::load_config().await;
             if let Ok(config) = config_result {
-                let gui_config_data = GuiConfig::from(config);
-                gui_config.set(gui_config_data);
+                let gui_config_data = GuiConfigWithData::from(config);
+                gui_config_with_data.set(gui_config_data.clone());
+                gui_config.set(gui_config_data.gui_config);
             }
         });
         
@@ -181,34 +198,33 @@ fn app() -> Element {
     };
 
     let on_auto_start_change = move |e: Event<FormData>| {
-        gui_config.write().auto_start = e.value().parse().unwrap_or(false);
-    };
-    
-    let on_save_config = move |_| {
+        let new_value = e.value().parse().unwrap_or(false);
+        gui_config.write().auto_start = new_value;
+        
         let gui_config = gui_config.clone();
         let message = message.clone();
         spawn(async move {
-            let config_to_save = gui_config_to_config_data(&*gui_config.read());
-            match save_config(&config_to_save) {
+            let config_to_save: ConfigData = (&*gui_config.read()).into();
+            let config_manager = ConfigManager::new();
+            
+            match crate::set_auto_start(new_value, &config_to_save) {
                 Ok(_) => {
-                    match crate::set_auto_start(gui_config().auto_start, &config_to_save) {
-                        Ok(_) => {
-                            let mut message = message.clone();
-                            message.set("配置已保存".to_string());
-                        }
-                        Err(e) => {
-                            let mut message = message.clone();
-                            message.set(format!("配置已保存，但开机自启设置失败: {}", e));
-                        }
+                    if let Err(e) = config_manager.save_config_with_debounce(config_to_save).await {
+                        eprintln!("保存配置失败: {}", e);
+                        let mut message = message.clone();
+                        message.set(format!("保存配置失败: {}", e));
+                    } else {
+                        let mut message = message.clone();
+                        message.set("开机自启设置已更新".to_string());
                     }
                 }
                 Err(e) => {
+                    eprintln!("设置开机自启失败: {}", e);
                     let mut message = message.clone();
-                    message.set(format!("保存配置失败: {}", e));
+                    message.set(format!("设置开机自启失败: {}", e));
                 }
             }
         });
-        ()
     };
     
     let on_immediate_login = move |_| {
@@ -242,9 +258,27 @@ fn app() -> Element {
                 let mut message = message.clone();
                 let mut session_logs = session_logs.clone();
                 let gui_config = gui_config.clone();
+                let gui_config_with_data = gui_config_with_data.clone();
                 let mut logs = logs.clone();
                 
-                let config_to_login: ConfigData = (&*gui_config.read()).into();
+                let current_gui_config = gui_config.read().clone();
+                let current_gui_config_with_data = gui_config_with_data.read().clone();
+                
+                let config_to_login = if !current_gui_config.username.is_empty() && !current_gui_config.password.is_empty() {
+                    if let Err(e) = save_account_config(&current_gui_config).await {
+                        let error_msg = format!("[{}] 保存账户信息失败: {}\n", 
+                            chrono::Local::now().format("%Y-%m-%d %H:%M:%S"), e);
+                        session_logs.write().push_str(&error_msg);
+                    }
+                    current_gui_config.into()
+                } else if !current_gui_config_with_data.encrypted_password.is_empty() {
+                    let mut config: ConfigData = current_gui_config.into();
+                    config.account.encrypted_password = current_gui_config_with_data.encrypted_password;
+                    config
+                } else {
+                    current_gui_config.into()
+                };
+
                 let start_time = std::time::Instant::now();
                 
                 let login_start_msg = format!("[{}] 开始登录尝试...\n", 
@@ -303,6 +337,24 @@ fn app() -> Element {
         }
     };
     
+    async fn save_account_config(gui_config: &GuiConfig) -> Result<(), String> {
+        let mut config_to_save = gui_config_to_config_data(gui_config);
+        
+        match crate::core::config::load_config().await {
+            Ok(existing) => {
+                config_to_save.network = existing.network;
+                config_to_save.logging = existing.logging;
+                config_to_save.settings = existing.settings;
+                config_to_save.notification = existing.notification;
+            }
+            Err(e) => {
+                eprintln!("加载现有配置失败: {}", e);
+            }
+        }
+        
+        crate::core::config::save_config(&config_to_save)
+    }
+    
     let on_debug_mode_toggle = move |e: Event<FormData>| {
         let value = e.value().clone();
         spawn(async move {
@@ -335,13 +387,23 @@ fn app() -> Element {
                 }
                 
                 div { class: "form-row",
-                    input {
-                        r#type: "password",
-                        value: "{gui_config.read().password}",
-                        oninput: move |e: Event<FormData>| {
-                            gui_config.write().password = e.value().clone();
-                        },
-                        placeholder: "密码"
+                    div { class: "password-container",
+                        input {
+                            r#type: "password",
+                            value: "{gui_config.read().password}",
+                            oninput: move |e: Event<FormData>| {
+                                gui_config.write().password = e.value().clone();
+                            },
+                            placeholder: "密码"
+                        }
+                        div {
+                            class: "password-hint",
+                            match (gui_config.read().password.is_empty(), !gui_config_with_data.read().encrypted_password.is_empty()) {
+                                (true, true) => "当前已记录密码，出于安全考虑不予显示",
+                                (true, false) => "当前未记录过任何密码",
+                                _ => ""
+                            }
+                        }
                     }
                 }
             }
@@ -365,7 +427,7 @@ fn app() -> Element {
                         r#type: "checkbox",
                         checked: gui_config().auto_start,
                         oninput: on_auto_start_change,
-                        title: "勾选并点击[保存配置]后生效\n启用后，程序将在电脑开机时静默登录校园网（推荐勾选）\n启用前，必须先填写并保存配置信息"
+                        title: "启用前，必须先填写并保存配置信息\n启用后，程序将在电脑开机时静默登录校园网（推荐勾选）"
                     }
                     label { "开机自启" }
                 }
@@ -381,12 +443,6 @@ fn app() -> Element {
             }
             
             div { class: "button-group",
-                button {
-                    class: "btn btn-primary",
-                    onclick: on_save_config,
-                    "保存配置"
-                }
-                
                 button {
                     class: "btn btn-success",
                     onclick: on_immediate_login,
