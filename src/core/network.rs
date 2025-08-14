@@ -166,7 +166,7 @@ impl NetworkManager {
             encoded_password
         );
         let base_url = &self.config.login_ip;
-        let url = format!("{}drcom/login?{}", base_url.trim_end_matches('/'), params);
+        let url = format!("{}/drcom/login?{}", base_url.trim_end_matches('/'), params);
         
         let client = reqwest::Client::builder()
             .timeout(Duration::from_secs(10))
