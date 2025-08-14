@@ -2,6 +2,20 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [1.1.0](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.0.1...v1.1.0) (2025-08-14)
+
+
+### Features
+
+* **core:** 集中配置管理、增加保存防抖 ([b79f339](https://github.com/ReRokutosei/AutoLoginGuet/commit/b79f339d61755601ca68b91b96635c679bc7ef5f))
+
+
+### Bug Fixes
+
+* **gui:** 修复第二次启动的空密码框导致登录失败问题 ([268397f](https://github.com/ReRokutosei/AutoLoginGuet/commit/268397f4a48ed062e2381aa9ccb3bfac68226780))
+* **network:** 修复 url 缺少斜杠导致请求失败的问题 ([bee6068](https://github.com/ReRokutosei/AutoLoginGuet/commit/bee60680e2b9bfdd9bd95c86fa27c58197bae39b))
+* **security:** 修复日志记录中的敏感信息明文泄漏问题 ([1dd0df0](https://github.com/ReRokutosei/AutoLoginGuet/commit/1dd0df08113b251c5ad3cf62b17e9579969f8adb))
+
 ### [1.0.1](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.0.0...v1.0.1) (2025-08-13)
 
 
@@ -18,7 +32,7 @@ All notable changes to this project will be documented in this file. See [standa
 * **gui:** 修复密码重复加密导致登录失败的问题 ([d818e62](https://github.com/ReRokutosei/AutoLoginGuet/commit/d818e62c60ec31575a8f12933ab83b2b5e6faee4))
 * **network:** 将硬编码IP地址改为使用配置中的`login_ip` ([4bafe8c](https://github.com/ReRokutosei/AutoLoginGuet/commit/4bafe8c272ac5de889b1126b51bc9d17b6a8fc33))
 
-## [1.0.0](https://github.com/ReRokutosei/AutoLoginGuet/commit/06f9b44747bc5c1bf99eab548800d356efa7c9c8) (2025-08-11)
+### [1.0.0](https://github.com/ReRokutosei/AutoLoginGuet/commit/06f9b44747bc5c1bf99eab548800d356efa7c9c8) (2025-08-11)
 
 
 ### Features

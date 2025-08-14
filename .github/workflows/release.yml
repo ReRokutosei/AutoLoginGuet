@@ -44,27 +44,21 @@ jobs:
       - name: Build
         run: cargo build --release --target x86_64-pc-windows-msvc
 
-      - name: Get version from tag
-        id: get_version
-        run: |
-          $VERSION = $env:GITHUB_REF -replace 'refs/tags/', ''
-          "VERSION=$VERSION" >> $env:GITHUB_ENV
-        shell: pwsh
-
       - name: Extract changelog for version
         id: changelog
         run: |
-          $VERSION = $env:VERSION
+          $VERSION = Select-String -Path Cargo.toml -Pattern '^version = "(.+)"' | ForEach-Object { $_.Matches.Groups[1].Value }
           $CLEAN_VERSION = $VERSION -replace '^v', ''
           $CHANGELOG_CONTENT = Get-Content CHANGELOG.md -Raw -Encoding UTF8
           $MAJOR_VERSION = $CLEAN_VERSION -replace '\.(\d+).*', ''
-          $PATTERN = "(## \[$MAJOR_VERSION\.[\d\.]+\].*?)(?=## \[.*\]|\Z)"
+          $PATTERN = "(#{2,3} \[$MAJOR_VERSION\.[\d\.]+\].*?)(?=#{2,3} \[.*\]|\Z)"
           $MATCHES = [regex]::Matches($CHANGELOG_CONTENT, $PATTERN, [System.Text.RegularExpressions.RegexOptions]::Singleline)
           
           if ($MATCHES.Count -gt 0) {
             $CHANGELOG_TEXT = ""
-            foreach ($MATCH in $MATCHES) {
-              $CHANGELOG_TEXT += $MATCH.Groups[1].Value.Trim() + "`n`n"
+            $limit = [Math]::Min(2, $MATCHES.Count)
+            for ($i = 0; $i -lt $limit; $i++) {
+              $CHANGELOG_TEXT += $MATCHES[$i].Groups[1].Value.Trim() + "`n`n"
             }
           } else {
             $CHANGELOG_TEXT = "No changelog entry found for major version $MAJOR_VERSION"

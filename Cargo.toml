@@ -1,6 +1,6 @@
 [package]
 name = "AutoLoginGUET"
-version = "1.0.1"
+version = "1.1.0"
 edition = "2024"
 
 [dependencies]
@@ -20,6 +20,7 @@ sha2 = "0.10.9"
 base64 = "0.21.7"
 futures = "0.3.31"
 win-msgbox = "0.2.1"
+regex = "1.11.1"
 
 [target.'cfg(windows)'.build-dependencies]
 winres = "0.1.12"
