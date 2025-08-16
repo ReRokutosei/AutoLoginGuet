@@ -1,0 +1,11 @@
+[Unit]
+Description=Auto Login GUET
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/bin/bash SCRIPT_PATH_PLACEHOLDER/login.sh
+RemainAfterExit
+
+[Install]
+WantedBy=default.target
