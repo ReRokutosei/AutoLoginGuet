@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.1.1](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.1.0...v1.1.1) (2025-08-16)
+
+
+### Features
+
+* **mini_script:** 为高级用户提供多平台轻量级脚本，请在[项目目录](mini_script)查看 ([d1f5018](https://github.com/ReRokutosei/AutoLoginGuet/commit/d1f50189b17a1af7fb26042417ea9edf45a8f29d))
+
+
+### Bug Fixes
+
+* **gui:** 修复 Debug 模式登录配置的处理逻辑 ([74e6d96](https://github.com/ReRokutosei/AutoLoginGuet/commit/74e6d96f55b215fefa754c31dcaa325f39fff352))
+* **gui:** 修复更改开机自启时可能覆盖已保存密码的问题 ([061803f](https://github.com/ReRokutosei/AutoLoginGuet/commit/061803f22fd3463b8e9edbb9f540adeb1fadf8b4))
+
 ## [1.1.0](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.0.1...v1.1.0) (2025-08-14)
 
 
