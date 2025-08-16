@@ -234,7 +234,18 @@ fn app() -> Element {
             message.set("正在Debug登录...".to_string());
             session_logs.write().clear();
             
-            let config_to_login: ConfigData = (&*gui_config.read()).into();
+            let current_gui_config = gui_config.read().clone();
+            let current_gui_config_with_data = gui_config_with_data.read().clone();
+            
+            let config_to_login = if !current_gui_config.username.is_empty() && !current_gui_config.password.is_empty() {
+                current_gui_config.into()
+            } else if !current_gui_config_with_data.encrypted_password.is_empty() {
+                let mut config: ConfigData = current_gui_config.into();
+                config.account.encrypted_password = current_gui_config_with_data.encrypted_password;
+                config
+            } else {
+                current_gui_config.into()
+            };
             
             let mut debug_output = String::new();
             let debug_msg = format!("[{}] 开始Debug登录...\n", 
