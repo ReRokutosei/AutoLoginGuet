@@ -22,6 +22,11 @@
 - 🔕 **静默模式**: 也可无窗口静默启动
 - 🔐 **密码加密**: 使用 AES 加密存储用户密码
 
+> [!TIP]
+> 项目现已添加[mini_script](mini_script])脚本目录，包含基本的登录和通知功能
+> 
+> 为**有经验**的三端(Win、Unix)用户提供**超轻量级**选择
+
 ## 示意图
 
 <img src="assets/GUI.png" alt="GUI示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
