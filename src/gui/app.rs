@@ -202,9 +202,22 @@ fn app() -> Element {
         gui_config.write().auto_start = new_value;
         
         let gui_config = gui_config.clone();
+        let gui_config_with_data = gui_config_with_data.clone();
         let message = message.clone();
         spawn(async move {
-            let config_to_save: ConfigData = (&*gui_config.read()).into();
+            let current_gui_config = gui_config.read().clone();
+            let current_gui_config_with_data = gui_config_with_data.read().clone();
+            
+            let config_to_save = if !current_gui_config.username.is_empty() && !current_gui_config.password.is_empty() {
+                current_gui_config.into()
+            } else if !current_gui_config_with_data.encrypted_password.is_empty() {
+                let mut config: ConfigData = current_gui_config.into();
+                config.account.encrypted_password = current_gui_config_with_data.encrypted_password;
+                config
+            } else {
+                current_gui_config.into()
+            };
+            
             let config_manager = ConfigManager::new();
             
             match crate::set_auto_start(new_value, &config_to_save) {
