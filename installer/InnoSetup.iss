@@ -33,7 +33,7 @@ WizardStyle=modern
 PrivilegesRequired=lowest
 
 ; 支持的 Windows 版本
-MinVersion=0,6.1
+MinVersion=10.0.10240
 
 ; 图标设置
 SetupIconFile=assets\icon.ico
@@ -50,7 +50,7 @@ VersionInfoProductVersion={#MyAppVersion}
 VersionInfoCopyright=By ReRokutosei. All rights reserved.
 
 [Languages]
-Name: "english"; MessagesFile: "compiler:Default.isl"
+Name: "zh_CN"; MessagesFile: ".\installer\ChineseSimplified.isl"
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
