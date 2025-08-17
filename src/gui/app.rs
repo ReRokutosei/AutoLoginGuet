@@ -369,7 +369,6 @@ fn app() -> Element {
                 config_to_save.network = existing.network;
                 config_to_save.logging = existing.logging;
                 config_to_save.settings = existing.settings;
-                config_to_save.notification = existing.notification;
             }
             Err(e) => {
                 eprintln!("加载现有配置失败: {}", e);

@@ -63,7 +63,6 @@ impl Default for SettingsConfig {
 #[serde(default)]
 pub struct ConfigData {
     pub network: NetworkConfig,
-    pub notification: NotificationConfig,
     pub logging: LoggingConfig,
     pub account: AccountConfig,
     pub settings: SettingsConfig,
@@ -73,21 +72,10 @@ impl Default for ConfigData {
     fn default() -> Self {
         ConfigData {
             network: NetworkConfig::default(),
-            notification: NotificationConfig::default(),
             logging: LoggingConfig::default(),
             account: AccountConfig::default(),
             settings: SettingsConfig::default(),
         }
-    }
-}
-
-#[derive(Debug, Deserialize, Serialize, Clone, PartialEq)]
-#[serde(default)]
-pub struct NotificationConfig {}
-
-impl Default for NotificationConfig {
-    fn default() -> Self {
-        NotificationConfig {}
     }
 }
 
