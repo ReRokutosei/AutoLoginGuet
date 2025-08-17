@@ -48,7 +48,7 @@
 
 ### macOS
 
-1. 参考 [项目文件](mini_script/unix/com.autologin.guet.plist)
+1. 参考 项目文件 `com.autologin.guet.plist`
 2. 创建 plist 文件（ `~/Library/LaunchAgents/com.autologin.guet.plist`）
 3. 加载 plist 文件：
    ```bash
@@ -57,7 +57,7 @@
 
 ### Linux
 
-1. 参考 [项目文件](mini_script/unix/autologin-guet.service)
+1. 参考 项目文件 `autologin-guet.service`
 2. 创建 systemd 服务文件 `~/.config/systemd/user/autologin-guet.service`
 3. 启用并启动服务：
    ```bash
