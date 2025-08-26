@@ -1,274 +1,366 @@
 # AutoLoginGUET API 文档
 
-## 1. 项目概述
+## 项目概述
 
-AutoLoginGUET 是一个使用 Rust 编写的轻量级工具，用于自动登录桂林电子科技大学的校园网络。该工具支持静默登录和图形用户界面配置，可以设置为开机自启。
+AutoLoginGUET 是一个用于桂林电子科技大学校园网自动登录的工具。
 
-### 技术架构概览
+理论上更改几个参数就可以给其他同样使用哆点网络系统的学校使用
 
-- **前端框架**: Dioxus v0.5.6
-- **异步运行时**: Tokio v1.47.1
-- **网络请求**: reqwest v0.12.22
-- **加密算法**: aes v0.8.4, sha2 v0.10.9
-- **配置格式**: toml v0.9.5
-- **日志管理**: chrono v0.4.41, notify-rust v4.11.3
-- **操作系统支持**: Windows (使用 winreg v0.52.0 和 winres v0.1.12)
-
-## 2. 项目总览
-
-### 2.1 项目结构说明
+## 核心模块结构
 
 ```
 src/
 ├── core/              # 核心功能模块
-│   ├── config.rs        # 配置定义和基本操作
-│   ├── config_manager.rs # 配置管理器
-│   ├── crypto.rs        # 密码加密解密
-│   ├── logging.rs       # 日志管理
-│   ├── mod.rs           # 核心模块导出
-│   ├── network.rs       # 网络请求
-│   └── notification.rs  # 系统通知
-├── gui/               # 图形界面模块
-│   ├── app.rs           # 主应用逻辑
-│   ├── components.rs    # 界面组件
-│   ├── debug.rs         # 调试模块
-│   └── mod.rs           # GUI模块导出
-└── main.rs              # 程序入口
+│   ├── config.rs      # 配置管理
+│   ├── crypto.rs      # 密码加密解密
+│   ├── dto.rs         # 数据传输对象
+│   ├── error.rs       # 错误处理
+│   ├── events.rs      # 事件系统
+│   ├── message.rs     # 消息处理中心
+│   ├── network.rs     # 网络管理
+│   └── service.rs     # 服务层（主要API）
+├── gui/               # GUI相关代码（仅Windows）
+└── lib.rs             # 库导出
 ```
 
-### 2.2 功能流程示意
+## 主要API
+
+### AuthService - 认证服务
+
+`AuthService` 是项目的核心API，提供了登录、配置管理、系统设置等主要功能。
+
+#### 创建实例
+
+```rust
+use autologinguet_core::{AuthService, load_config};
+
+let config = load_config().unwrap_or_default();
+let auth_service = AuthService::new(config);
+```
+
+#### 主要方法
+
+##### `silent_login(&self, config: ConfigData) -> AppResult<LoginResult>`
+
+执行静默登录操作。
+
+- **参数**: `config` - 登录配置数据
+- **返回**: `LoginResult` - 登录结果
+- **用途**: 在后台自动执行登录流程，不显示GUI界面
+
+##### `login_with_credentials(&self, username: &str, password: &str, isp: &str) -> AppResult<LoginResult>`
+
+使用指定凭据执行登录。
+
+- **参数**:
+  - `username` - 用户名
+  - `password` - 密码
+  - `isp` - 运营商
+- **返回**: `LoginResult` - 登录结果
+- **用途**: 使用特定凭据执行登录
+
+##### `load_config(&self) -> AppResult<ConfigData>`
+
+加载配置文件。
+
+- **返回**: `ConfigData` - 配置数据
+- **用途**: 从配置文件加载用户设置
+
+##### `save_config(&self, config: &ConfigData) -> AppResult<()>`
+
+保存配置到文件。
+
+- **参数**: `config` - 要保存的配置数据
+- **返回**: `Result` - 操作结果
+- **用途**: 将配置数据保存到配置文件
+
+##### `clean_old_logs(&self) -> AppResult<()>`
+
+清理过期日志。
+
+- **返回**: `Result` - 操作结果
+- **用途**: 删除超过保留期限的日志文件
+
+##### `set_auto_start(&self, enabled: bool) -> AppResult<()>`
+
+设置开机自启。
+
+- **参数**: `enabled` - 是否启用开机自启
+- **返回**: `Result` - 操作结果
+- **用途**: 设置或取消程序开机自启（仅Windows平台）
+
+### NetworkManager - 网络管理
+
+负责网络状态检测和登录请求发送。
+
+#### 主要方法
+
+##### `check_network_status(&self) -> AppResult<NetworkStatus>`
+
+检查网络状态。
+
+- **返回**: `NetworkStatus` - 网络状态枚举
+- **用途**: 检测当前网络连接状态
+
+##### `attempt_login_with_credentials(&self, username: &str, password: &str, isp: &str) -> AppResult<String>`
+
+尝试使用凭据登录。
+
+- **参数**:
+  - `username` - 用户名
+  - `password` - 密码
+  - `isp` - 运营商
+- **返回**: `String` - 服务器响应内容
+- **用途**: 发送登录请求到校园网认证系统
+
+### MessageCenter - 消息中心
+
+负责日志记录、通知显示和消息格式化。
+
+#### 主要方法
+
+##### `handle_login_result(&self, result: LoginResult) -> LoginResult`
+
+处理登录结果并发送相关通知。
+
+- **参数**: `result` - 登录结果
+- **返回**: `LoginResult` - 处理后的登录结果
+- **用途**: 记录日志、显示通知并触发事件
+
+##### `log_event(&self, level: &str, message: &str) -> AppResult<()>`
+
+记录日志事件。
+
+- **参数**:
+  - `level` - 日志级别（INFO, ERROR等）
+  - `message` - 日志消息
+- **返回**: `Result` - 操作结果
+- **用途**: 将消息写入日志文件
+
+### EventBus - 事件总线
+
+提供事件驱动的通信机制。
+
+#### 主要方法
+
+##### `register_handler(&self, handler: Box<dyn EventHandler>)`
+
+注册事件处理器。
+
+- **参数**: `handler` - 事件处理器实现
+- **用途**: 添加监听器以接收应用事件
+
+##### `dispatch(&self, event: AppEvent)`
+
+分发事件。
+
+- **参数**: `event` - 要分发的应用事件
+- **用途**: 向所有注册的处理器发送事件
+
+## 数据结构
+
+### LoginResult
+
+表示登录操作的结果。
+
+```rust
+pub struct LoginResult {
+    pub success: bool,     // 登录是否成功
+    pub message: String,   // 登录消息
+    pub elapsed_time: f64, // 登录耗时（秒）
+}
+```
+
+### ConfigData
+
+表示应用配置数据。
+
+```rust
+pub struct ConfigData {
+    pub account: AccountConfig,   // 账户配置
+    pub network: NetworkConfig,   // 网络配置
+    pub logging: LoggingConfig,   // 日志配置
+    pub settings: SettingsConfig, // 设置配置
+}
+```
+
+### NetworkStatus
+
+表示网络状态枚举。
+
+```rust
+pub enum NetworkStatus {
+    LoggedInAndConnected,     // 已登录校园网且能访问广域网
+    NotLoggedInButConnected,  // 未登录校园网但能访问广域网
+    NetworkCheckFailed,       // 网络检查失败
+    NoNetwork,                // 无法访问校园网且无法访问广域网
+    LoggedInButNoWan,         // 已登录校园网但不能访问广域网
+}
+```
+
+### AppEvent
+
+表示应用程序事件。
+
+```rust
+pub enum AppEvent<'a> {
+    NetworkStatusChecked { /* ... */ },  // 网络状态检查完成
+    LoginAttempted { /* ... */ },        // 登录尝试完成
+    ConfigLoaded { /* ... */ },          // 配置加载完成
+    ConfigSaved { /* ... */ },           // 配置保存完成
+    AutoStartSet { /* ... */ },          // 开机自启设置完成
+    NotificationShown { /* ... */ },     // 系统通知显示
+}
+```
+
+## 错误处理
+
+项目使用 `thiserror` crate 定义了统一的错误类型 `AppError`：
+
+```rust
+pub enum AppError {
+    NetworkError { source: NetworkError },     // 网络相关错误
+    ConfigError(String),                       // 配置相关错误
+    SystemError(String),                       // 系统相关错误
+    UnknownError(String),                      // 未知错误
+    PasswordDecryptionError { /* ... */ },     // 密码解密错误
+    NotificationError(String),                 // 通知相关错误
+    LogError(String),                          // 日志相关错误
+    CryptoError(String),                       // 加密相关错误
+}
+```
+
+所有API方法都返回 `AppResult<T>` 类型，它是 `Result<T, AppError>` 的别名。
+
+## 使用示例
+
+### 基本登录流程
+
+```rust
+use autologinguet_core::{AuthService, load_config, LoginResult};
+
+#[tokio::main]
+async fn main() -> Result<(), Box<dyn std::error::Error>> {
+    // 加载配置
+    let config = load_config().unwrap_or_default();
+    
+    // 创建认证服务
+    let auth_service = AuthService::new(config);
+    
+    // 执行静默登录
+    let login_result = auth_service.silent_login(config).await?;
+    
+    if login_result.success {
+        println!("{}", login_result.message);
+    } else {
+        eprintln!("{}", login_result.message);
+    }
+    
+    Ok(())
+}
+```
+
+### 自定义事件处理
+
+```rust
+use autologinguet_core::{AuthService, AppEvent, EventHandler, load_config};
+
+struct MyEventHandler;
+
+impl EventHandler for MyEventHandler {
+    fn handle_event(&self, event: AppEvent) {
+        match event {
+            AppEvent::LoginAttempted { success, message, .. } => {
+                if success {
+                    println!("{}", message);
+                } else {
+                    eprintln!("{}", message);
+                }
+            }
+            _ => {}
+        }
+    }
+}
+
+fn main() {
+    let config = load_config().unwrap_or_default();
+    let auth_service = AuthService::new(config);
+    
+    // 注册自定义事件处理器
+    auth_service.register_event_handler(Box::new(MyEventHandler));
+    
+    // 执行登录等操作
+}
+```
+
+## 平台差异
+
+### Windows 特有功能
+
+- 开机自启设置
+- Windows 通知系统集成
+- Windows 注册表操作
+
+### 跨平台功能
+
+- 网络状态检测
+- 校园网登录
+- 配置管理
+- 日志记录
+- 密码加密存储
+
+## 程序工作流程图
 
 ```mermaid
 graph TD
     A[程序启动] --> B{是否为静默模式?}
-    B -->|是| C[加载配置文件]
-    B -->|否| D[启动GUI界面]
-    
-    C --> E{配置是否完整?}
-    E -->|否| D
-    
-    E -->|是| F[网络状态检测]
-    F --> G{网络状态}
-    
-    G -->|已登录且连接广域网| H[记录日志]
-    G -->|未登录但连接广域网| I[解密密码]
-    G -->|仅连接广域网| J[记录日志]
-    G -->|无网络连接| K[记录日志]
-    
-    H --> L[发送系统通知]
-    J --> L
-    K --> L
-    
-    I --> M[尝试登录校园网]
-    M --> N{登录结果}
-    
-    N -->|成功| H
-    N -->|失败| O[记录错误日志]
-    O --> P[发送错误通知]
-    
-    L --> Q[退出程序]
-    P --> Q
-    
-    D --> R[GUI界面显示]
-    R --> S{用户操作}
-    S -->|保存配置| T[加密密码]
-    S -->|测试连接| F
-    S -->|开机自启设置| U[修改注册表]
-    S -->|调试网络| V[网络调试界面]
-    
-    T --> W[保存配置文件]
-    U --> R
-    V --> R
-    W --> R
+    B -->|是| C[加载配置]
+    B -->|否| D[启动GUI]
+    C --> E[检查网络状态]
+    E --> F{是否已登录?}
+    F -->|是| G[返回成功结果]
+    F -->|否| H[验证配置完整性]
+    H --> I{配置是否完整?}
+    I -->|否| J[返回配置错误]
+    I -->|是| K[解密密码]
+    K --> L{密码解密成功?}
+    L -->|否| M[返回解密错误]
+    L -->|是| N[执行登录]
+    N --> O{登录成功?}
+    O -->|是| P[记录成功日志]
+    O -->|否| Q[记录失败日志]
+    P --> R[发送成功通知]
+    Q --> S[发送失败通知]
+    R --> T[返回登录结果]
+    S --> T
+    T --> U[程序结束]
+    J --> U
+    M --> U
+    G --> U
+    D --> U
 ```
 
-## 3. 核心模块功能说明
-
-### 3.1 程序入口 main.rs
-
-程序入口文件，负责初始化和协调各模块功能。
-
-主要功能：
-- 解析命令行参数（-silent）
-- 根据参数决定运行模式（静默模式/图形界面模式）
-- 在静默模式下调用 `silent_login` 函数执行登录流程
-- 在图形界面模式下调用 `gui::launch_gui` 启动GUI
-
-关键函数：
-- `silent_login()` - 静默登录主函数
-- `silent_login_with_config()` - 使用配置执行登录
-- `set_auto_start()` - 设置开机自启
-
-### 3.2 core 模块
-
-#### 3.2.1 config.rs - 配置管理
-
-负责配置文件的加载、保存和验证。
-
-主要结构体：
-- `AccountConfig` - 账户配置（用户名、加密密码、运营商）
-- `LoggingConfig` - 日志配置（启用状态、文件路径、保留天数）
-- `SettingsConfig` - 设置配置（开机自启）
-- `NotificationConfig` - 通知配置
-- `ConfigData` - 完整配置数据结构
-
-主要函数：
-- `load_config()` - 加载配置
-- `save_config()` - 保存配置
-- `is_config_complete()` - 验证配置完整性
-
-#### 3.2.2 config_manager.rs - 配置管理器
-
-负责配置的高级管理功能，包括配置的创建、更新和删除等操作。
-
-主要结构体：
-- `ConfigManager` - 配置管理器
-
-主要函数：
-- `new()` - 创建新的配置管理器实例
-- `load()` - 加载配置
-- `save()` - 保存配置
-- `update()` - 更新配置
-
-#### 3.2.3 crypto.rs - 密码加密解密
-
-负责用户密码的加密和解密操作。
-
-主要函数：
-- `encrypt_password()` - 加密密码
-- `decrypt_password()` - 解密密码
-- `generate_machine_key()` - 生成机器相关密钥
-- `get_machine_guid()` - 获取Windows机器GUID
-
-#### 3.2.4 logging.rs - 日志管理
-
-负责日志的记录和管理。
-
-主要结构体：
-- `LogManager` - 日志管理器
-
-主要函数：
-- `log_event()` - 记录日志事件
-- `clean_old_logs()` - 清理旧日志
-- `read_logs()` - 读取日志
-
-#### 3.2.5 network.rs - 网络请求
-
-负责网络状态检查和登录请求。
-
-主要结构体：
-- `NetworkStatus` - 网络状态枚举
-- `NetworkConfig` - 网络配置
-- `NetworkManager` - 网络管理器
-
-主要函数：
-- `check_campus_network_status()` - 检查校园网状态
-- `check_external_connectivity()` - 检查外部网络连接
-- `check_network_status()` - 检查网络状态
-- `attempt_login_with_credentials()` - 使用凭据尝试登录
-- `try_drcom_login()` - DRCOM登录实现
-
-#### 3.2.6 notification.rs - 系统通知
-
-负责系统通知的显示。
-
-主要结构体：
-- `NotificationManager` - 通知管理器
-
-主要函数：
-- `show()` - 显示通知
-
-### 3.3 gui 模块
-
-#### 3.3.1 app.rs - 主应用逻辑
-
-负责GUI应用程序的主要逻辑和界面交互。
-
-主要结构体：
-- `GuiConfig` - GUI配置结构体
-
-主要函数：
-- `launch_gui()` - 启动GUI
-- `gui_config_to_config_data()` - GUI配置转换为配置数据
-- `app()` - 主应用组件
-
-#### 3.3.2 components.rs - 界面组件
-
-负责定义界面的样式和组件。
-
-主要常量：
-- `CSS` - CSS样式
-- `HTML` - HTML模板
-
-#### 3.3.3 debug.rs - 调试模块
-
-负责调试模式下的网络请求和信息显示。
-
-主要结构体：
-- `DebugInfo` - 调试信息
-
-主要函数：
-- `perform_debug_login()` - 执行调试登录
-- `perform_debug_network_request()` - 执行调试网络请求
-
-## 4. 模块间关系
-
-### 4.1 core 模块与 gui 模块的关系
-
-- GUI模块依赖core模块提供的功能接口
-- GUI模块通过调用core模块的函数来执行实际的业务逻辑
-- core模块不依赖GUI模块，保持独立性
-
-### 4.2 各 core 子模块间的依赖关系
+## 数据流向示意图
 
 ```mermaid
 graph LR
-    A[main.rs] --> B[core模块]
-    A --> C[gui模块]
+    A[用户界面] <-- AppEvent --> B((EventBus))
+    B <-- AppEvent --> C[事件处理器]
     
-    B --> B1[config.rs]
-    B --> B2[network.rs]
-    B --> B3[logging.rs]
-    B --> B4[notification.rs]
-    B --> B5[crypto.rs]
+    D[配置文件] <-- ConfigData --> E[配置管理器]
+    E <-- ConfigData --> F[认证服务]
     
-    C --> C1[app.rs]
-    C --> C2[components.rs]
-    C --> C3[debug.rs]
+    G[网络请求] <-- HTTP --> H[校园网认证系统]
+    F <-- LoginResult --> I[消息中心]
+    I --> J[日志文件]
+    I --> K[系统通知]
     
-    B1 -->|配置数据| B2
-    B1 -->|配置数据| B3
-    B2 -->|网络状态| B3
-    B2 -->|登录结果| B4
-    B5 -->|加解密| B1
-    C1 -->|读取/保存| B1
-    C2 -->|调用| B2
-    C2 -->|调用| B5
-```
-
-### 4.3 网络、加密、配置等核心功能的交互方式
-
-1. **配置加载流程**：
-   - GUI或主程序调用 `load_config()` 加载配置
-   - 配置数据被传递给其他模块使用
-
-2. **登录流程**：
-   - 检查网络状态（`NetworkManager::check_network_status()`）
-   - 解密密码（`decrypt_password()`）
-   - 执行登录请求（`NetworkManager::attempt_login_with_credentials()`）
-   - 记录日志（`LogManager::log_event()`）
-   - 显示通知（`NotificationManager::show()`）
-
-### 5. 数据流向
-## 数据流向
-
-```mermaid
-graph LR
-    A[用户输入] --> B{GUI界面}
-    B --> C[配置文件]
-    C --> D{核心功能模块}
-    D --> E[日志记录]
-    D --> F[系统通知]
-    D --> G[网络请求]
-    D --> H[加密存储]
+    L[密码] --> M[加密模块]
+    M --> N[加密密码]
+    N --> E
+    E --> M
+    M --> L
+    
+    F <-- NetworkStatus --> I
+    F <-- LoginResult --> I
 ```

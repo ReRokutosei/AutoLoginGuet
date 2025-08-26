@@ -1,4 +1,4 @@
-# [<?xml version="1.0" encoding="UTF-8"?><svg width="30" height="30" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg"><path d="M31 4H16L10 27H18L14 44L40 16H28L31 4Z" fill="none" stroke="#333" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 11L19 19" stroke="#333" stroke-width="4" stroke-linecap="round"/></svg>AutoLoginGUET](AutoLoginGUET)
+# ![AutoLoginGUET](assets/flash.svg)AutoLoginGUET
 
 ![Rust](https://img.shields.io/badge/Rust-000000.svg?logo=rust&logoColor=white)
 [![OS: Windows](https://img.shields.io/badge/OS-Windows10+-informational)](https://www.microsoft.com/zh-cn/windows)
@@ -23,21 +23,21 @@
 - 🔐 **密码加密**: 使用 AES 加密存储用户密码
 
 > [!TIP]
-> 项目现已添加[mini_script](mini_script)脚本目录，包含基本的登录和通知功能
+> 项目现已添加[mini_script](mini_script)脚本目录，仅包含基本的登录和通知功能
 > 
 > 为**有经验**的三端(Win、Unix)用户提供**超轻量级**选择
 
 ## 示意图
 
-<img src="assets/GUI.png" alt="GUI示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
+![GUI示意图](docs/GUI.png)
 
 ***
 
-<img src="assets/notification.png" alt="通知示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
+![通知示意图](docs/notification.png)
 
 ***
 
-<img src="assets/config.png" alt="配置文件示意图" style="box-shadow: 2px 2px 10px rgba(0, 0, 0, 0.3); border-radius: 8px;" />
+![配置文件示意图](docs/config.png)
 
 ## 安装
 
@@ -53,7 +53,7 @@
 
 ## 使用方法
 
-### GUI 模式
+### GUI
 
 直接双击 `AutoLoginGUET` 启动：
 
@@ -62,17 +62,19 @@
 3. 点击"开机自启"
 4. 点击"立即登录"
 
+
+
 ### 静默模式
 
-使用 `-silent` 参数启动静默登录模式：
+传入 `-silent` 参数启动静默登录模式：
 
 ```bash
-.\AutoLoginGUET.exe -silent
+./AutoLoginGUET.exe -silent
 ```
 
 > [!TIP] 
 >
-> 在静默模式下，程序不会显示前端图形窗口
+> 在静默模式下，程序不会显示任何窗口
 >
 > 设定开机自启后，程序会自动添加`-silent`
 
@@ -89,25 +91,7 @@
 
 [API 文档](docs/API.md)
 
-### 项目结构
-
-```
-src/
-├── core/
-│   ├── config.rs        # 配置管理
-│   ├── config_manager.rs # 配置管理器
-│   ├── crypto.rs        # 密码加密解密
-│   ├── logging.rs       # 日志管理
-│   ├── mod.rs           # 模块声明
-│   ├── network.rs       # 网络请求
-│   └── notification.rs  # 系统通知
-├── gui/
-│   ├── app.rs           # 主应用逻辑
-│   ├── components.rs    # 界面组件
-│   ├── debug.rs         # 调试模块
-│   └── mod.rs           # 模块声明
-└── main.rs              # 程序入口
-```
+使用`cargo doc`可以生成更详细的文档
 
 ### 从源码编译
 
@@ -117,7 +101,8 @@ cd AutoLoginGuet
 cargo build --release
 ```
 
-构建后的可执行文件位于 `target/release/AutoLoginGUET.exe`
+构建后的可执行文件位于：
+- `target/release/AutoLoginGUET.exe` - 主程序
 
 ## 许可证
 
