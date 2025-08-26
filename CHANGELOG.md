@@ -2,6 +2,40 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.0.0](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.1.1...v2.0.0) (2025-08-26)
+
+
+### ⚠ BREAKING CHANGES
+
+* **core:** 解耦项目架构，引入服务层和事件驱动机制 ([a5d09cf](https://github.com/ReRokutosei/AutoLoginGuet/commit/a5d09cfe0a713e3f384280bd4612fafa94805a52))
+
+### feat: 架构重构与模块解耦
+
+* **引入服务层架构**: 将业务逻辑从GUI和CLI中抽离，创建统一的AuthService服务层，为前端提供一致的接口
+* **实现事件驱动架构**: 通过EventBus和EventHandler实现模块间解耦，提高系统灵活性
+* **添加DTO模式**: 引入 GuiConfigDto 分离界面数据和核心配置，提高数据传输的清晰度
+* **抽象核心组件**: 通过trait抽象网络、日志、通知等核心组件
+
+### refactor: 代码结构优化
+
+* **重构核心模块**: 将原有的核心功能拆分为config、crypto、network、logging、notification等独立模块
+* **统一错误处理**: 引入AppError枚举和AppResult类型别名，提供一致的错误处理机制
+* **改进配置管理**: 重新设计配置加载和保存机制，增加配置验证和标准化处理
+* **优化网络状态检查**: 扩展网络状态类型，提供更详细的网络连接信息
+
+### feat: 用户体验改进
+
+* **增强输入验证**: 添加用户名和密码格式验证，提供实时反馈
+* **改进错误提示**: 提供更加用户友好的错误消息
+* **优化界面交互**: 重新设计GUI界面交互逻辑
+* **完善Debug模式**: 改进调试信息输出
+
+### perf: 性能与稳定性提升
+
+* **优化日志管理**: 改进日志记录和清理，提高日志处理效率
+* **增强网络处理**: 优化网络请求处理，大幅提升稳定性
+* **改善内存管理**: 通过合理的Arc和Mutex使用，优化内存分配和释放
+
 ### [1.1.1](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.1.0...v1.1.1) (2025-08-16)
 
 
