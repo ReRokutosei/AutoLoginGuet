@@ -1,7 +1,7 @@
 ; AutoLoginGUET 安装脚本
 
 #define MyAppName "AutoLoginGUET"
-#define MyAppVersion "1.0.1"
+#define MyAppVersion "2.0.0"
 #define MyAppPublisher "ReRokutosei"
 #define MyAppURL "https://github.com/ReRokutosei/AutoLoginGUET"
 #define MyAppExeName "AutoLoginGUET.exe"
@@ -53,10 +53,15 @@ VersionInfoCopyright=By ReRokutosei. All rights reserved.
 Name: "zh_CN"; MessagesFile: ".\installer\ChineseSimplified.isl"
 
 [Tasks]
-Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}"; Flags: unchecked
+Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"; GroupDescription: "{cm:AdditionalIcons}";
 
 [Files]
 ; 主程序文件
+
+; 本地路径
+; Source: "target\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
+
+; workflow路径
 Source: "target\x86_64-pc-windows-msvc\release\{#MyAppExeName}"; DestDir: "{app}"; Flags: ignoreversion
 Source: "LICENSE"; DestDir: "{app}"; Flags: ignoreversion
 
@@ -72,20 +77,49 @@ Filename: "{app}\{#MyAppExeName}"; Description: "{cm:LaunchProgram,{#MyAppName}}
 
 [Code]
 {
-  卸载时删除额外的文件和文件夹
+  安装时删除旧版本的注册表项
+}
+procedure CurStepChanged(CurStep: TSetupStep);
+begin
+  if CurStep = ssPostInstall then
+  begin
+    RegDeleteValue(HKEY_CURRENT_USER,
+                   'Software\Microsoft\Windows\CurrentVersion\Run',
+                   'AutoLoginGUET.exe');
+  end;
+end;
+
+{
+  卸载时删除残留文件
 }
 procedure CurUninstallStepChanged(CurUninstallStep: TUninstallStep);
 var
-  WebView2Path, ConfigPath: String;
+  WebView2Path, ConfigPath, LogPath: String;
 begin
   if CurUninstallStep = usPostUninstall then
   begin
+    // 删除 WebView2 用户数据目录
     WebView2Path := ExpandConstant('{app}\AutoLoginGUET.exe.WebView2');
     if DirExists(WebView2Path) then
       DelTree(WebView2Path, True, True, True);
-    
+
+    // 删除配置文件
     ConfigPath := ExpandConstant('{app}\config.toml');
     if FileExists(ConfigPath) then
       DeleteFile(ConfigPath);
+
+    // 删除日志文件
+    LogPath := ExpandConstant('{app}\AutoLogin.log');
+        if FileExists(LogPath) then
+          DeleteFile(LogPath);
+
+    // 清理开机启动注册表值
+    RegDeleteValue(HKEY_CURRENT_USER,
+                   'Software\Microsoft\Windows\CurrentVersion\Run',
+                   'AutoLoginGUET.exe');
+
+    RegDeleteValue(HKEY_CURRENT_USER,
+                   'Software\Microsoft\Windows\CurrentVersion\Run',
+                   'AutoLoginGUET');
   end;
 end;
