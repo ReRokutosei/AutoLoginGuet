@@ -1,244 +1,343 @@
+/* 
+ * AutoLoginGUET GUI 界面样式表
+ * 控制整个登录界面的外观和布局
+ */
+
+/* 基础页面样式 */
 body {
     font-family: "Microsoft YaHei", sans-serif;
     margin: 0;
     padding: 0;
 }
 
+/* 主容器 */
 .container {
-    width: 100%;
-    height: 100vh;
+    width: 100%; /* 容器宽度占父元素的100% */
+    height: 100vh; /* 容器高度占视口高度的100% */
     margin: 0;
     background: white;
-    padding: 30px;
+    padding: 30px; /* 容器内边距 */
     border-radius: 0;
     box-shadow: none;
     box-sizing: border-box;
     text-align: center;
+    position: relative;
 }
 
-
-.app-title {
-    color: #333;
-    margin-bottom: 20px;
-    font-size: 24px;
-    text-align: center;
-    width: 100%;
-    font-weight: bold;
+/* 右上角图标容器 */
+.top-right-icons {
+    position: absolute;
+    top: 15px;
+    right: 30px;
+    display: flex;
+    gap: 15px;
+    z-index: 10;
 }
 
+/* 图标链接样式 */
+.icon-link {
+    text-decoration: none;
+    display: inline-block;
+}
+
+/* SVG图标样式 */
+.icon-svg {
+    width: 20px;
+    height: 20px;
+    vertical-align: middle;
+    transition: transform 0.2s;
+}
+
+/* 鼠标悬停时图标放大效果 */
+.icon-link:hover .icon-svg {
+    transform: scale(1.2);
+}
+
+/* 用户头像容器 */
 .avatar-container {
     display: flex;
     justify-content: center;
-    margin-bottom: 20px;
+    margin-bottom: 15px; /* 下边距 */
+    margin-top: 15px; /* 增加上边距 */
 }
 
+/* 用户头像图片 */
 .avatar {
-    width: 100px;
-    height: 100px;
-    border-radius: 50%;
+    width: 80px; /* 头像宽度 */
+    height: 80px; /* 头像高度 */
+    border-radius: 50%; /* 圆形头像 */
     object-fit: cover;
-    border: 3px solid #f0f0f0;
-    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+    border: 3px solid #f0f0f0; /* 边框 */
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1); /* 阴影效果 */
 }
 
+/* 表单组 */
 .form-group {
-    margin-bottom: 15px;
+    margin-bottom: 15px; /* 下边距 */
     text-align: left;
 }
 
+/* 表单行 */
 .form-row {
     display: flex;
     align-items: center;
-    margin-bottom: 12px;
+    margin-bottom: 15px; /* 下边距 */
 }
 
+/* 表单标签 */
 .form-row label {
-    width: 60px;
-    margin-right: 10px;
+    width: 60px; /* 标签宽度 */
+    margin-right: 10px; /* 右边距 */
     font-weight: bold;
     color: #555;
     text-align: right;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
 }
 
+/* 表单输入框（文本和密码） */
 .form-row input {
-    flex: 1;
-    padding: 10px;
-    border: 2px solid #e1e1e1;
-    border-radius: 6px;
+    flex: 1; /* 占据剩余空间 */
+    padding: 10px; /* 内边距 */
+    border: 2px solid #e1e1e1; /* 边框 */
+    border-radius: 6px; /* 圆角 */
     box-sizing: border-box;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
     transition: border-color 0.3s;
+    text-align: center;
 }
 
+/* 输入框获得焦点时的样式 */
 .form-row input:focus {
     border-color: #667eea;
     outline: none;
 }
 
+/* 输入框无效时的样式 */
+.form-row input.invalid {
+    border-color: #dc3545;
+}
+
+/* 通用标签样式 */
 label {
     display: block;
-    margin-bottom: 6px;
+    margin-bottom: 6px; /* 下边距 */
     font-weight: bold;
     color: #555;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
 }
 
+/* 通用输入框样式（文本、密码和选择框） */
 input[type="text"], input[type="password"], select {
-    width: 100%;
-    padding: 10px;
-    border: 2px solid #e1e1e1;
-    border-radius: 6px;
+    width: 100%; /* 宽度占父元素100% */
+    padding: 10px; /* 内边距 */
+    border: 2px solid #e1e1e1; /* 边框 */
+    border-radius: 6px; /* 圆角 */
     box-sizing: border-box;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
     transition: border-color 0.3s;
+    text-align: center;
 }
 
+/* 输入框获得焦点时的样式 */
 input[type="text"]:focus, input[type="password"]:focus, select:focus {
     border-color: #667eea;
     outline: none;
 }
 
+/* 选择框行 */
 .select-row {
+    position: relative;
     display: flex;
     justify-content: center;
-    margin-bottom: 12px;
+    margin-bottom: 15px; /* 下边距 */
 }
 
+/* 运营商选择下拉框 */
+/* 下拉图标来自字节跳动开源图标库IconPark */
 .select-row select {
-    width: 180px;
-    padding: 10px;
-    border: 2px solid #e1e1e1;
-    border-radius: 6px;
+    width: 180px; /* 下框宽度 */
+    border: 2px solid #e1e1e1; /* 边框 */
+    border-radius: 6px; /* 圆角 */
     box-sizing: border-box;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
     transition: border-color 0.3s;
     text-align: center;
     text-align-last: center;
     -webkit-appearance: none;
-    -moz-appearance: none;
     appearance: none;
-    background: #fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23666' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3e%3cpolyline points='6,9 12,15 18,9'%3e%3c/polyline%3e%3c/svg%3e") no-repeat right 10px center;
+    background: #fff url("data:image/svg+xml;charset=UTF-8,%3csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 48 48' fill='none'%3e%3cpath d='M36 18L24 30L12 18' stroke='%23333' stroke-width='4' stroke-linecap='round' stroke-linejoin='miter'/%3e%3c/svg%3e") no-repeat right 10px center;
     background-size: 16px;
 }
 
+/* 选择框获得焦点时的样式 */
 .select-row select:focus {
     border-color: #667eea;
     outline: none;
 }
 
+/* 复选框组 - "开机自启"和"调试模式" */
 .checkbox-group {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin: 15px 0;
+    margin: 15px 0; /* 上下边距 */
 }
 
+/* 单个复选框项 */
 .checkbox-item {
     display: flex;
     align-items: center;
 }
 
+/* 复选框样式 */
 .checkbox-item input[type="checkbox"] {
-    transform: scale(1.2);
-    margin-right: 6px;
+    appearance: none;
+    width: 16px; /* 复选框宽度 */
+    height: 16px; /* 复选框高度 */
+    border: 2px solid #e1e1e1; /* 边框 */
+    border-radius: 50%; /* 圆形 */
+    margin-right: 6px; /* 右边距 */
+    position: relative;
+    cursor: pointer;
+    transition: all 0.3s;
 }
 
+/* 复选框选中时的样式 */
+.checkbox-item input[type="checkbox"]:checked {
+    background-color: #667eea;
+    border-color: #667eea;
+}
+
+/* 复选框选中时的内部圆点 */
+.checkbox-item input[type="checkbox"]:checked::after {
+    content: "";
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px; /* 内部圆点宽度 */
+    height: 5px; /* 内部圆点高度 */
+    background-color: white;
+    border-radius: 50%;
+}
+
+/* 复选框获得焦点时的样式 */
+.checkbox-item input[type="checkbox"]:focus {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.2); /* 焦点阴影 */
+}
+
+/* 复选框标签 */
 .checkbox-item label {
     margin-bottom: 0;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
 }
 
-/* 添加按钮组样式 */
+/* 按钮组 */
 .button-group {
     display: flex;
     justify-content: center;
-    margin: 20px 0 15px;
+    margin: 20px 0 15px; /* 上下边距 */
 }
 
+/* 通用按钮样式 */
 button {
-    flex: 1;
-    padding: 12px;
+    flex: 1; /* 占据可用空间 */
+    padding: 12px; /* 内边距 */
     border: none;
-    border-radius: 6px;
+    border-radius: 6px; /* 圆角 */
     cursor: pointer;
-    font-size: 14px;
+    font-size: 14px; /* 字体大小 */
     font-weight: bold;
     transition: all 0.3s;
-    max-width: 200px;
+    max-width: 200px; /* 最大宽度 */
 }
 
+/* 主要按钮样式 */
 .btn-primary {
     background-color: #667eea;
     color: white;
 }
 
+/* 主要按钮悬停效果 */
 .btn-primary:hover {
     background-color: #5a6fd8;
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* 向上移动 */
 }
 
+/* 成功按钮样式（"立即登录"） */
 .btn-success {
     background-color: #28a745;
     color: white;
 }
 
+/* 成功按钮悬停效果 */
 .btn-success:hover {
     background-color: #218838;
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* 向上移动 */
 }
 
+/* 信息按钮样式 */
 .btn-info {
     background-color: #17a2b8;
     color: white;
 }
 
+/* 信息按钮悬停效果 */
 .btn-info:hover {
     background-color: #138496;
-    transform: translateY(-2px);
+    transform: translateY(-2px); /* 向上移动 */
 }
 
+/* 警告框 */
 .alert {
-    padding: 12px;
-    border-radius: 6px;
-    margin-bottom: 15px;
+    padding: 12px; /* 内边距 */
+    border-radius: 6px; /* 圆角 */
+    margin-bottom: 15px; /* 下边距 */
     text-align: center;
-    font-size: 14px;
-    min-width: 200px;
-    width: 100%;
+    font-size: 14px; /* 字体大小 */
+    min-width: 200px; /* 最小宽度 */
+    width: 100%; /* 宽度 */
     box-sizing: border-box;
 }
 
+/* 信息警告框样式 */
 .alert-info {
     background-color: #d1ecf1;
     color: #0c5460;
-    border: 1px solid #bee5eb;
+    border: 1px solid #bee5eb; /* 边框 */
 }
 
+/* 会话日志文本框（调试模式下显示） */
 .session-logs {
     font-family: "Consolas", "Courier New", monospace;
-    font-size: 11px;
+    font-size: 11px; /* 字体大小 */
     resize: vertical;
-    width: 100%;
-    min-height: 100px;
-    border-radius: 6px;
-    border: 1px solid #e1e1e1;
-    padding: 8px;
+    width: 100%; /* 宽度 */
+    min-height: 100px; /* 最小高度 */
+    border-radius: 6px; /* 圆角 */
+    border: 1px solid #e1e1e1; /* 边框 */
+    padding: 8px; /* 内边距 */
     box-sizing: border-box;
 }
 
+/* 密码提示文本 */
 .password-hint {
     position: absolute;
-    right: 10px;
+    right: 50%;
     top: 50%;
-    transform: translateY(-50%);
+    transform: translate(50%, -50%);
     color: #999;
-    font-size: 12px;
+    font-size: 14px;
     pointer-events: none;
     opacity: 0.7;
-    text-align: right;
+    text-align: center;
+    white-space: pre-line;
+    max-width: 90%; /* 占父容器的 90% */
+    width: max-content; /* 根据内容扩展，但受 max-width 限制 */
 }
 
+/* 密码输入框容器 */
 .password-container {
     position: relative;
     width: 100%;

@@ -1,14 +1,19 @@
 //! 调试模块
+//!
+//! 负责处理GUI界面中的调试模式功能，提供比正常模式更详细的信息输出
 
+use autologinguet_core::core::config::{normalize_isp, ConfigData};
+use autologinguet_core::core::dto::GuiConfigDto;
+use autologinguet_core::core::error::log_event;
+use autologinguet_core::core::network::NetworkManager;
 use dioxus::prelude::*;
-use crate::core::config::ConfigData;
-use crate::core::network::NetworkManager;
-use crate::core::{decrypt_password, generate_machine_key};
 
 const DEFAULT_LOGIN_IP: &str = "http://10.0.1.5/";
 
+/// Debug信息结构体
 #[derive(Clone, PartialEq, Default)]
 pub struct DebugInfo {
+    pub enable_debug: bool,
     pub request_url: String,
     pub request_params: String,
     pub response_content: String,
@@ -16,52 +21,17 @@ pub struct DebugInfo {
     pub error_message: String,
 }
 
-pub fn perform_debug_login(
-    config_to_login: ConfigData,
-    mut debug_info: Signal<DebugInfo>,
-    mut message: Signal<String>,
-    _session_logs: Signal<String>,
-) -> String {
-    debug_info.write().error_message.clear();
-    debug_info.write().response_content.clear();
-    debug_info.write().request_params.clear();
-    debug_info.write().request_url.clear();
-    debug_info.write().status_code.clear();
-    
-    let mut debug_output = String::new();
-    
-    let debug_msg = format!("[{}] 开始Debug登录...\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S"));
-    debug_output.push_str(&debug_msg);
-    
-    let machine_key = generate_machine_key();
-    let password = match decrypt_password(&config_to_login.account.encrypted_password, &machine_key) {
-        Ok(pwd) => pwd,
-        Err(e) => {
-            eprintln!("解密密码失败: {}", e);
-            String::new()
-        }
-    };
-    
-    let actual_isp = if config_to_login.account.isp == "校园网" {
-        ""
-    } else {
-        &config_to_login.account.isp
-    };
 
-    debug_info.write().request_url = DEFAULT_LOGIN_IP.to_string();
-    debug_info.write().request_params = format!("callback=dr1003&DDDDD={}{}&upass=******&0MKKey=123456", config_to_login.account.username, actual_isp);
-
-    debug_output.push_str(&format!("请求URL: {}\n", DEFAULT_LOGIN_IP));
-    debug_output.push_str(&format!("实际发送的请求参数: callback=dr1003&DDDDD={}{}&upass={}&0MKKey=123456\n", config_to_login.account.username, actual_isp, password));
-    debug_output.push_str("发送登录请求中...\n");
-    
-    message.set("正在进行Debug登录...".to_string());
-    
-    debug_output
+/// 将`GuiConfigDto`转换为`ConfigData`用于Debug登录
+fn gui_config_to_config(gui_config: &GuiConfigDto) -> ConfigData {
+    let config: ConfigData = gui_config.clone().into();
+    config
 }
 
+
+/// 执行Debug网络请求
 pub fn perform_debug_network_request(
-    config_to_login: ConfigData,
+    gui_config: GuiConfigDto,
     mut debug_info: Signal<DebugInfo>,
     mut message: Signal<String>,
     mut session_logs: Signal<String>,
@@ -69,33 +39,23 @@ pub fn perform_debug_network_request(
 ) {
     spawn(async move {
         let mut debug_output = current_log;
+        let config_to_login: ConfigData = gui_config_to_config(&gui_config);
         let network_manager = NetworkManager::new(config_to_login.network.clone());
         
-        let machine_key = generate_machine_key();
-        let password = match decrypt_password(&config_to_login.account.encrypted_password, &machine_key) {
-            Ok(pwd) => pwd,
-            Err(e) => {
-                eprintln!("解密密码失败: {}", e);
-                String::new()
-            }
-        };
+        log_event("INFO", "开始调试网络请求...");
         
-        let actual_isp = if config_to_login.account.isp == "校园网" {
-            ""
-        } else {
-            &config_to_login.account.isp
-        };
+        let password = autologinguet_core::core::crypto::decrypt_config_password(&config_to_login.account.encrypted_password)
+            .unwrap_or_else(|e| {
+                log_event("ERROR", &format!("解密密码失败: {}", e));
+                String::new()
+            });
+        
+        let actual_isp = normalize_isp(&config_to_login.account.isp);
         
         debug_info.write().request_url = DEFAULT_LOGIN_IP.to_string();
         debug_info.write().request_params = format!("callback=dr1003&DDDDD={}{}&upass=******&0MKKey=123456", config_to_login.account.username, actual_isp);
         
         debug_output.push_str(&format!("使用客户端配置: {:?}\n", config_to_login.network));
-        
-        debug_output.push_str("构建HTTP客户端...\n");
-        debug_output.push_str("添加请求头:\n");
-        debug_output.push_str("  User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36\n");
-        debug_output.push_str("  Referer: http://10.0.1.5/\n");
-        debug_output.push_str("准备发送GET请求...\n");
         
         let login_result = network_manager.attempt_login_with_credentials(
                 &config_to_login.account.username,
@@ -108,17 +68,12 @@ pub fn perform_debug_network_request(
             Ok(response_content) => {
                 debug_info.write().response_content = response_content.clone();
                 message.set("Debug登录完成".to_string());
-                debug_output.push_str(&format!("[{}] 收到响应\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
-                debug_output.push_str("响应预览:\n");
-                debug_output.push_str(&response_content);
-                debug_output.push_str(&format!("\n[{}] Debug登录完成\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
+                log_event("INFO", "Debug登录完成");
             }
             Err(e) => {
-                debug_info.write().error_message = e.clone();
+                debug_info.write().error_message = e.to_string();
                 message.set("Debug登录失败".to_string());
-                debug_output.push_str(&format!("[{}] 请求失败\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
-                debug_output.push_str(&format!("错误信息: {}\n", e));
-                debug_output.push_str(&format!("\n[{}] Debug登录失败\n", chrono::Local::now().format("%Y-%m-%d %H:%M:%S")));
+                log_event("ERROR", &format!("Debug登录失败: {}", e));
             }
         }
         

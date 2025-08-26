@@ -16,7 +16,7 @@ fn generate_windows_resource() {
     
     let mut res = winres::WindowsResource::new();
     res.set_icon("assets/icon.ico")
-        .set_language(0x0409)
+        .set_language(0x0804)
         .set_manifest_file("assets/manifest.xml");
     
     res.set("FileDescription", "AutoLoginGUET")

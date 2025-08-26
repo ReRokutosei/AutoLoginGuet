@@ -1,13 +1,16 @@
-// 密码加密解密模块，使用AES-CBC加密算法对密码进行加密存储
+//! 密码加密解密模块
 
+use crate::core::error::{AppError, AppResult};
+use crate::core::events::{notify_login_attempted, notify_network_status_checked, EventBus};
+use crate::core::network::NetworkStatus;
 use aes::cipher::{block_padding::Pkcs7, BlockDecryptMut, BlockEncryptMut, KeyIvInit};
+use base64::{engine::general_purpose, Engine as _};
 use rand::RngCore;
-use sha2::{Sha256, Digest};
-use base64::{Engine as _, engine::general_purpose};
-#[cfg(windows)]
-use winreg::RegKey;
+use sha2::{Digest, Sha256};
 #[cfg(windows)]
 use winreg::enums::*;
+#[cfg(windows)]
+use winreg::RegKey;
 
 type Aes256CbcEnc = cbc::Encryptor<aes::Aes256>;
 type Aes256CbcDec = cbc::Decryptor<aes::Aes256>;
@@ -23,8 +26,17 @@ fn derive_key(password: &str) -> [u8; 32] {
     key
 }
 
-/// 加密密码
-pub fn encrypt_password(password: &str, key: &str) -> Result<String, Box<dyn std::error::Error>> {
+/// 加密密码（基础函数）
+/// 
+/// 使用AES-CBC算法加密密码，需要提供加密密钥
+/// 
+/// # 参数
+/// * `password` - 需要加密的明文密码
+/// * `key` - 用于加密的密钥
+/// 
+/// # 返回值
+/// 返回加密后的密码字符串，或包含错误信息的AppError
+pub fn encrypt_password(password: &str, key: &str) -> AppResult<String> {
     let key = derive_key(key);
     let mut iv = [0u8; 16];
     rand::thread_rng().fill_bytes(&mut iv);
@@ -34,22 +46,31 @@ pub fn encrypt_password(password: &str, key: &str) -> Result<String, Box<dyn std
     buffer[..password.len()].copy_from_slice(password.as_bytes());
     
     let ciphertext = cipher.encrypt_padded_mut::<Pkcs7>(&mut buffer, password.len())
-        .map_err(|e| format!("加密失败: {:?}", e))?;
+        .map_err(|e| AppError::CryptoError(format!("加密失败: {:?}", e)))?;
     
     let mut result = Vec::with_capacity(iv.len() + ciphertext.len());
     result.extend_from_slice(&iv);
     result.extend_from_slice(ciphertext);
-    Ok(general_purpose::STANDARD.encode(result))
+    Ok(general_purpose::STANDARD.encode(&result))
 }
 
-/// 解密密码
-pub fn decrypt_password(encrypted_password: &str, key: &str) -> Result<String, Box<dyn std::error::Error>> {
+/// 解密密码（基础函数）
+/// 
+/// 使用AES-CBC算法解密密码，需要提供解密密钥
+/// 
+/// # 参数
+/// * `encrypted_password` - 需要解密的密文密码
+/// * `key` - 用于解密的密钥
+/// 
+/// # 返回值
+/// 返回解密后的明文密码，或包含错误信息的AppError
+pub fn decrypt_password(encrypted_password: &str, key: &str) -> AppResult<String> {
     let key = derive_key(key);
     let data = general_purpose::STANDARD.decode(encrypted_password)
-        .map_err(|e| format!("Base64解码失败: {:?}", e))?;
+        .map_err(|e| AppError::CryptoError(format!("Base64解码失败: {:?}", e)))?;
     
     if data.len() < 16 {
-        return Err("数据长度不足".into());
+        return Err(AppError::CryptoError("数据长度不足".into()));
     }
     
     let (iv, ciphertext) = data.split_at(16);
@@ -59,32 +80,169 @@ pub fn decrypt_password(encrypted_password: &str, key: &str) -> Result<String, B
     buffer[..ciphertext.len()].copy_from_slice(ciphertext);
     
     let plaintext = cipher.decrypt_padded_mut::<Pkcs7>(&mut buffer)
-        .map_err(|e| format!("解密失败: {:?}", e))?;
+        .map_err(|e| AppError::CryptoError(format!("解密失败: {:?}", e)))?;
     
-    Ok(String::from_utf8(plaintext.to_vec())
-        .map_err(|e| format!("UTF-8解码失败: {:?}", e))?)
-}
-
-#[cfg(windows)]
-/// 生成机器相关的密钥（基于机器信息）
-pub fn generate_machine_key() -> String {
-    let machine_key = match get_machine_guid() {
-        Ok(guid) => guid,
-        Err(_) => {
-            "AutoLoginGUET_default_key_2025".to_string()
-        }
-    };
-    
-    format!("AutoLoginGUET_salt_2025_{}", machine_key)
+    String::from_utf8(plaintext.to_vec())
+        .map_err(|e| AppError::CryptoError(format!("UTF-8解码失败: {:?}", e)))
 }
 
 #[cfg(windows)]
 /// 获取Windows机器GUID
-fn get_machine_guid() -> Result<String, Box<dyn std::error::Error>> {
+fn get_machine_guid() -> AppResult<String> {
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
-    let key = hklm.open_subkey("SOFTWARE\\Microsoft\\Cryptography")?;
-    let machine_guid: String = key.get_value("MachineGuid")?;
+    let key = hklm.open_subkey("SOFTWARE\\Microsoft\\Cryptography")
+        .map_err(|e| AppError::CryptoError(format!("无法打开注册表项: {}", e)))?;
+    let machine_guid: String = key.get_value("MachineGuid")
+        .map_err(|e| AppError::CryptoError(format!("无法获取MachineGuid值: {}", e)))?;
     Ok(machine_guid)
 }
 
+#[cfg(windows)]
+/// 生成机器相关的密钥（基于机器信息）
+/// 
+/// 用于生成与机器绑定的加密密钥
+/// 如果无法获取机器信息，则使用默认密钥
+pub fn generate_machine_key() -> String {
+    match get_machine_guid() {
+        Ok(guid) => {
+            format!("AutoLoginGUET_salt_2025_{}", guid)
+        },
+        Err(e) => {
+            eprintln!("警告: 无法获取机器GUID，使用默认密钥: {}", e);
+            "AutoLoginGUET_default_key_2025".to_string()
+        }
+    }
+}
 
+/// 使用机器密钥加密密码
+/// 
+/// 结合了密钥生成和密码加密两个步骤的便捷函数
+/// 
+/// # 参数
+/// * `password` - 需要加密的明文密码
+/// 
+/// # 返回值
+/// 返回加密后的密码字符串，或包含错误信息的AppError
+pub fn encrypt_password_with_machine_key(password: &str) -> AppResult<String> {
+    let machine_key = generate_machine_key();
+    encrypt_password(password, &machine_key)
+}
+
+/// 使用机器密钥解密密码
+/// 
+/// 结合了密钥生成和密码解密两个步骤的便捷函数
+/// 
+/// # 参数
+/// * `encrypted_password` - 需要解密的密文密码
+/// 
+/// # 返回值
+/// 返回解密后的明文密码，或包含错误信息的AppError
+pub fn decrypt_password_with_machine_key(encrypted_password: &str) -> AppResult<String> {
+    let machine_key = generate_machine_key();
+    decrypt_password(encrypted_password, &machine_key)
+}
+
+/// 解密配置中的密码
+/// 
+/// 专门用于解密配置文件中存储的密码，会将`CryptoError`转换为`PasswordDecryptionError`
+/// 
+/// # 参数
+/// * `encrypted_password` - 需要解密的密文密码
+/// 
+/// # 返回值
+/// 返回解密后的明文密码，或包含错误信息的AppError
+pub fn decrypt_config_password(encrypted_password: &str) -> AppResult<String> {
+    let machine_key = generate_machine_key();
+    decrypt_password(encrypted_password, &machine_key)
+        .map_err(|e| {
+            match e {
+                // 将加密错误转换为密码解密错误，隐藏内部细节
+                AppError::CryptoError(internal_msg) => {
+                    AppError::PasswordDecryptionError {
+                        internal_msg,
+                        user_msg: "密码解密失败，请重新输入密码".to_string(),
+                    }
+                }
+                _ => e,
+            }
+        })
+}
+
+/// 生成加密密码的统一函数，供配置模块使用
+/// 
+/// 用于在配置模块中加密密码，即使加密失败也不会导致程序崩溃
+/// 
+/// # 参数
+/// * `password` - 需要加密的明文密码
+/// 
+/// # 返回值
+/// 返回加密后的密码字符串，如果加密失败则返回空字符串
+pub fn generate_encrypted_password(password: &str) -> String {
+    if !password.is_empty() {
+        encrypt_password_with_machine_key(password).unwrap_or_else(|e| {
+            eprintln!("密码加密失败: {}", e);
+            String::new()
+        })
+    } else {
+        String::new()
+    }
+}
+
+/// 统一处理密码解密错误的函数
+/// 
+/// # 参数
+/// * `result` - 解密结果
+/// * `event_bus` - 事件总线，用于发送错误通知
+/// 
+/// # 返回值
+/// 返回解密后的密码，如果解密失败则返回空字符串
+pub fn handle_password_decryption_error_with_default(
+    result: Result<String, AppError>,
+    event_bus: &EventBus,
+) -> String {
+    handle_password_decryption_error(result, event_bus).unwrap_or_else(|_| String::new())
+}
+
+/// 统一处理密码解密错误
+/// 
+/// 用于在GUI和核心服务中统一处理密码解密失败的情况
+/// 返回解密后的密码，如果解密失败则通过事件通知并返回错误
+/// 
+/// # 参数
+/// * `decrypt_result` - 解密操作的结果
+/// * `event_bus` - 事件总线，用于发送错误通知
+/// 
+/// # 返回值
+/// 返回解密后的密码，如果解密失败则返回包含错误信息的AppError
+pub fn handle_password_decryption_error(
+    decrypt_result: Result<String, AppError>, 
+    event_bus: &EventBus
+) -> Result<String, AppError> {
+    match decrypt_result {
+        Ok(password) => Ok(password),
+        Err(e) => {
+            match &e {
+                AppError::PasswordDecryptionError { internal_msg, user_msg } => {
+                    notify_network_status_checked(event_bus, NetworkStatus::NetworkCheckFailed, internal_msg);
+
+                    notify_login_attempted(event_bus, false, user_msg, 0.0);
+
+                    Err(e)
+                },
+                _ => {
+                    let internal_error = format!("解密密码失败: {}", e);
+                    let user_message = "密码解密失败，请重新输入密码";
+
+                    notify_network_status_checked(event_bus, NetworkStatus::NetworkCheckFailed, &internal_error);
+
+                    notify_login_attempted(event_bus, false, user_message, 0.0);
+
+                    Err(AppError::PasswordDecryptionError {
+                        internal_msg: internal_error,
+                        user_msg: user_message.to_string(),
+                    })
+                }
+            }
+        }
+    }
+}
