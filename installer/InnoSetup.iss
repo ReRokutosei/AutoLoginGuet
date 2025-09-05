@@ -1,7 +1,7 @@
 ; AutoLoginGUET 安装脚本
 
 #define MyAppName "AutoLoginGUET"
-#define MyAppVersion "2.0.0"
+#define MyAppVersion "2.1.0"
 #define MyAppPublisher "ReRokutosei"
 #define MyAppURL "https://github.com/ReRokutosei/AutoLoginGUET"
 #define MyAppExeName "AutoLoginGUET.exe"

@@ -2,6 +2,15 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+## [2.1.0](https://github.com/ReRokutosei/AutoLoginGuet/compare/v2.0.0...v2.1.0) (2025-09-05)
+
+
+### Features
+
+* **flow:** 添加流量查询功能 ([cd35412](https://github.com/ReRokutosei/AutoLoginGuet/commit/cd35412751a8282af5c170faf67af44f33dc4d42))
+* **ISP:** 运营商添加中国广电 ([7fb8208](https://github.com/ReRokutosei/AutoLoginGuet/commit/7fb82086e376a497d09f179f4fd7e57ec9e23fcc))
+* **message:** 支持使用占位符自定义消息格式 ([0b77b23](https://github.com/ReRokutosei/AutoLoginGuet/commit/0b77b23b66f0fd1e5a16ca356f25f0267ffeed60))
+
 ## [2.0.0](https://github.com/ReRokutosei/AutoLoginGuet/compare/v1.1.1...v2.0.0) (2025-08-26)
 
 
