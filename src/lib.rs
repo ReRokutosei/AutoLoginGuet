@@ -2,12 +2,12 @@
 
 pub mod core;
 
-pub use core::dto::GuiConfigDto;
-pub use core::service::{AuthService, LoginResult};
-pub use core::error::AppError;
-pub use core::events::{AppEvent, EventHandler, DefaultEventHandler};
 pub use core::config::normalize_isp;
+pub use core::dto::GuiConfigDto;
+pub use core::error::AppError;
+pub use core::events::{AppEvent, EventHandler};
 pub use core::message::MessageCenter;
+pub use core::service::{AuthService, LoginResult};
 
 // GUI相关导出
 #[cfg(feature = "gui")]

@@ -12,10 +12,16 @@ pub fn is_webview2_installed() -> bool {
 
     let hklm = RegKey::predef(HKEY_LOCAL_MACHINE);
     let hklm_key_paths = [
-        format!("SOFTWARE\\Microsoft\\EdgeUpdate\\Clients\\{}", WEBVIEW2_CLIENT_ID),
-        format!("SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{}", WEBVIEW2_CLIENT_ID),
+        format!(
+            "SOFTWARE\\Microsoft\\EdgeUpdate\\Clients\\{}",
+            WEBVIEW2_CLIENT_ID
+        ),
+        format!(
+            "SOFTWARE\\WOW6432Node\\Microsoft\\EdgeUpdate\\Clients\\{}",
+            WEBVIEW2_CLIENT_ID
+        ),
     ];
-    
+
     for hklm_key_path in &hklm_key_paths {
         if check_webview2_key(&hklm, hklm_key_path) {
             return true;
@@ -27,7 +33,7 @@ pub fn is_webview2_installed() -> bool {
         "Software\\Microsoft\\EdgeUpdate\\Clients\\{}",
         WEBVIEW2_CLIENT_ID
     );
-    
+
     check_webview2_key(&hkcu, &hkcu_key_path)
 }
 
@@ -60,5 +66,6 @@ pub fn show_webview2_installation_guide() {
         "未检测到 WebView2 Runtime，程序需要此组件才能正常运行。\n\
          请访问微软官网下载并安装 WebView2 Runtime：\n\
          https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/\
-         ");
+         ",
+    );
 }

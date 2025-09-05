@@ -2,8 +2,7 @@
 //!
 //! 用于GUI和核心模块之间数据传输的结构体
 
-use crate::core::crypto::{encrypt_password, generate_machine_key};
-use crate::core::config::{ConfigData, AccountConfig, SettingsConfig};
+use crate::core::config::{AccountConfig, ConfigData, SettingsConfig};
 use crate::core::normalize_isp;
 
 /// GUI配置数据传输对象
@@ -54,28 +53,29 @@ impl From<ConfigData> for GuiConfigDto {
 impl From<GuiConfigDto> for ConfigData {
     /// 从`GuiConfigDto`转换为`ConfigData`
     fn from(gui_config: GuiConfigDto) -> Self {
-        let default = ConfigData::default();
-        let machine_key = generate_machine_key();
+        // 先加载现有配置
+        let existing_config = ConfigData::load_existing_or_default();
+
         let encrypted_password = if !gui_config.password.is_empty() {
-            encrypt_password(&gui_config.password, &machine_key).unwrap_or_else(|e| {
-                eprintln!("密码加密失败: {}", e);
-                String::new()
-            })
+            // 只有在提供了新密码时才进行加密
+            crate::core::crypto::generate_encrypted_password(&gui_config.password)
         } else {
+            // 否则使用已有的加密密码
             gui_config.encrypted_password.clone()
         };
-        
+
         ConfigData {
-            network: default.network,
+            network: existing_config.network,
             account: AccountConfig {
                 username: gui_config.username.clone(),
                 encrypted_password,
                 isp: normalize_isp(&gui_config.isp),
             },
-            logging: default.logging,
+            logging: existing_config.logging,
             settings: SettingsConfig {
                 auto_start: gui_config.auto_start,
             },
+            message: existing_config.message,
         }
     }
 }

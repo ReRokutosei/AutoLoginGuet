@@ -1,11 +1,11 @@
 //! GUI初始化模块
 
-use dioxus::prelude::*;
-use autologinguet_core::{GuiConfigDto, AuthService};
-use autologinguet_core::core::events::GuiEventHandlerMessage;
-use std::sync::mpsc::Receiver;
-use crate::gui::state::GuiConfigWithData;
 use crate::gui::gui_service::{init_config, init_logs_and_network};
+use crate::gui::state::GuiConfigWithData;
+use autologinguet_core::core::events::GuiEventHandlerMessage;
+use autologinguet_core::{AuthService, GuiConfigDto};
+use dioxus::prelude::*;
+use std::sync::mpsc::Receiver;
 
 /// 初始化配置
 ///

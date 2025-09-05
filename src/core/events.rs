@@ -2,7 +2,7 @@
 //!
 //! 定义事件类型和事件处理机制
 
-use crate::core::network::NetworkStatus;
+use crate::core::message::{CampusNetworkStatus, WanStatus};
 use std::sync::{Arc, Mutex};
 
 /// 应用程序事件
@@ -10,7 +10,8 @@ use std::sync::{Arc, Mutex};
 pub enum AppEvent<'a> {
     /// 网络状态检查完成
     NetworkStatusChecked {
-        status: NetworkStatus,
+        campus_status: CampusNetworkStatus,
+        wan_status: WanStatus,
         message: &'a str,
     },
     /// 登录尝试完成
@@ -20,15 +21,9 @@ pub enum AppEvent<'a> {
         elapsed_time: f64,
     },
     /// 配置加载完成
-    ConfigLoaded {
-        success: bool,
-        message: &'a str,
-    },
+    ConfigLoaded { success: bool, message: &'a str },
     /// 配置保存完成
-    ConfigSaved {
-        success: bool,
-        message: &'a str,
-    },
+    ConfigSaved { success: bool, message: &'a str },
     /// 开机自启设置完成
     AutoStartSet {
         enabled: bool,
@@ -36,21 +31,16 @@ pub enum AppEvent<'a> {
         message: &'a str,
     },
     /// 系统通知显示
-    NotificationShown {
-        title: &'a str,
-        message: &'a str,
-    },
+    NotificationShown { title: &'a str, message: &'a str },
 }
 
 /// GUI事件处理器消息
-/// 
+///
 /// 用于在事件处理器和GUI主线程之间传递事件处理请求
 #[derive(Debug)]
 pub enum GuiEventHandlerMessage {
     /// 网络状态检查完成
-    NetworkStatusChecked {
-        message: String,
-    },
+    NetworkStatusChecked { message: String },
     /// 登录尝试完成
     LoginAttempted {
         success: bool,
@@ -58,10 +48,7 @@ pub enum GuiEventHandlerMessage {
         elapsed_time: f64,
     },
     /// 配置保存完成
-    ConfigSaved {
-        success: bool,
-        message: String,
-    },
+    ConfigSaved { success: bool, message: String },
     /// 开机自启设置完成
     AutoStartSet {
         enabled: bool,
@@ -69,10 +56,7 @@ pub enum GuiEventHandlerMessage {
         message: String,
     },
     /// 日志记录
-    LogRecorded {
-        level: String,
-        message: String,
-    },
+    LogRecorded { level: String, message: String },
 }
 
 /// 事件处理器 trait
@@ -80,9 +64,6 @@ pub trait EventHandler: Send + Sync {
     /// 处理事件
     fn handle_event(&self, event: AppEvent);
 }
-
-/// 默认事件处理器
-pub struct DefaultEventHandler;
 
 /// 全局事件总线，用于统一处理所有应用事件
 #[derive(Clone)]
@@ -127,57 +108,27 @@ impl Default for EventBus {
     }
 }
 
-impl EventHandler for DefaultEventHandler {
-    fn handle_event(&self, event: AppEvent) {
-        match event {
-            AppEvent::NetworkStatusChecked { status: _, message } => {
-                println!("网络状态检查: {}", message);
-            }
-            AppEvent::LoginAttempted { success, message, elapsed_time: _ } => {
-                if success {
-                    println!("{}", message);
-                } else {
-                    eprintln!("{}", message);
-                }
-            }
-            AppEvent::ConfigLoaded { success, message } => {
-                if success {
-                    println!("配置加载成功: {}", message);
-                } else {
-                    eprintln!("配置加载失败: {}", message);
-                }
-            }
-            AppEvent::ConfigSaved { success, message } => {
-                if success {
-                    println!("配置保存成功: {}", message);
-                } else {
-                    eprintln!("配置保存失败: {}", message);
-                }
-            }
-            AppEvent::AutoStartSet { enabled: _, success, message } => {
-                if success {
-                    println!("开机自启设置成功: {}", message);
-                } else {
-                    eprintln!("开机自启设置失败: {}", message);
-                }
-            }
-            AppEvent::NotificationShown { title, message } => {
-                println!("通知 [{}]: {}", title, message);
-            }
-        }
-    }
-}
-
 /// 通知网络状态检查事件的通用函数
-pub fn notify_network_status_checked(event_bus: &EventBus, status: NetworkStatus, message: &str) {
+pub fn notify_network_status_checked(
+    event_bus: &EventBus,
+    campus_status: CampusNetworkStatus,
+    wan_status: WanStatus,
+    message: &str,
+) {
     event_bus.dispatch(AppEvent::NetworkStatusChecked {
-        status,
+        campus_status,
+        wan_status,
         message,
     });
 }
 
 /// 通知登录尝试事件的通用函数
-pub fn notify_login_attempted(event_bus: &EventBus, success: bool, message: &str, elapsed_time: f64) {
+pub fn notify_login_attempted(
+    event_bus: &EventBus,
+    success: bool,
+    message: &str,
+    elapsed_time: f64,
+) {
     event_bus.dispatch(AppEvent::LoginAttempted {
         success,
         message,
@@ -187,18 +138,12 @@ pub fn notify_login_attempted(event_bus: &EventBus, success: bool, message: &str
 
 /// 通知配置加载事件的通用函数
 pub fn notify_config_loaded(event_bus: &EventBus, success: bool, message: &str) {
-    event_bus.dispatch(AppEvent::ConfigLoaded {
-        success,
-        message,
-    });
+    event_bus.dispatch(AppEvent::ConfigLoaded { success, message });
 }
 
 /// 通知配置保存事件的通用函数
 pub fn notify_config_saved(event_bus: &EventBus, success: bool, message: &str) {
-    event_bus.dispatch(AppEvent::ConfigSaved {
-        success,
-        message,
-    });
+    event_bus.dispatch(AppEvent::ConfigSaved { success, message });
 }
 
 /// 通知开机自启设置事件的通用函数
@@ -212,8 +157,5 @@ pub fn notify_auto_start_set(event_bus: &EventBus, enabled: bool, success: bool,
 
 /// 通知通知显示事件的通用函数
 pub fn notify_notification_shown(event_bus: &EventBus, title: &str, message: &str) {
-    event_bus.dispatch(AppEvent::NotificationShown {
-        title,
-        message,
-    });
+    event_bus.dispatch(AppEvent::NotificationShown { title, message });
 }

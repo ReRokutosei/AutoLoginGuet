@@ -2,10 +2,10 @@
 //! AutoLoginGUET 主程序入口
 
 use crate::gui::app::launch_gui;
-use autologinguet_core::core::config::load_config;
-use autologinguet_core::core::error::AppResult;
 use autologinguet_core::AppError;
 use autologinguet_core::AuthService;
+use autologinguet_core::core::config::load_config;
+use autologinguet_core::core::error::AppResult;
 use std::env;
 use std::process;
 
@@ -26,14 +26,17 @@ fn main() -> AppResult<()> {
             let _ = env::set_current_dir(exe_dir);
         }
     }
-    
+
     let args: Vec<String> = env::args().collect();
-    
-    if args.contains(&"-silent".to_string()) {
+
+    // 只有在通过命令行传递"-silent"参数时才进入静默模式
+    let is_silent_mode = args.len() > 1 && args[1] == "-silent";
+
+    if is_silent_mode {
         silent_run()?;
         process::exit(0);
     }
-    
+
     launch_gui();
     Ok(())
 }
@@ -42,7 +45,7 @@ fn main() -> AppResult<()> {
 fn silent_run() -> AppResult<()> {
     let rt = tokio::runtime::Runtime::new()
         .map_err(|e| AppError::SystemError(format!("创建Tokio Runtime失败: {}", e)))?;
-    
+
     rt.block_on(async {
         let startup_time = std::time::Instant::now();
         let config = load_config().unwrap_or_default();
@@ -50,6 +53,6 @@ fn silent_run() -> AppResult<()> {
         let _ = auth_service.silent_login(config).await?;
         Ok::<(), AppError>(())
     })?;
-    
+
     Ok(())
 }
