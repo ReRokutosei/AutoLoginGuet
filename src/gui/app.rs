@@ -1,18 +1,18 @@
 //! GUI应用程序模块
 
-use dioxus::prelude::*;
-use std::sync::mpsc::Receiver;
 use base64::Engine;
 use dioxus::desktop::tao::dpi::PhysicalPosition;
 use dioxus::desktop::use_window;
+use dioxus::prelude::*;
+use std::sync::mpsc::Receiver;
 
-use autologinguet_core::core::service::{AuthService, validate_username, validate_password};
-use autologinguet_core::core::dto::GuiConfigDto;
-use autologinguet_core::core::events::GuiEventHandlerMessage;
 use crate::gui::debug::{DebugInfo, perform_debug_network_request};
+use crate::gui::gui_event::process_gui_events;
 use crate::gui::init::{init_app_config, init_app_logs_and_network};
 use crate::gui::state::GuiConfigWithData;
-use crate::gui::gui_event::process_gui_events;
+use autologinguet_core::core::dto::GuiConfigDto;
+use autologinguet_core::core::events::GuiEventHandlerMessage;
+use autologinguet_core::core::service::{AuthService, validate_password, validate_username};
 
 /// GUI主应用组件
 fn app() -> Element {
@@ -24,17 +24,16 @@ fn app() -> Element {
     let debug_info = use_signal(DebugInfo::default);
     let auth_service = use_signal(|| Option::<AuthService>::None);
     let receiver: Signal<Option<Receiver<GuiEventHandlerMessage>>> = use_signal(|| None);
-    // 添加用于跟踪输入验证状态的信号
     let mut username_invalid = use_signal(|| false);
     let mut password_invalid = use_signal(|| false);
-    
+
     // 居中窗口
     use_effect(move || {
         let window = use_window();
 
         spawn(async move {
             tokio::time::sleep(tokio::time::Duration::from_millis(200)).await;
-            
+
             if let Some(monitor) = window.current_monitor() {
                 let monitor_size = monitor.size();
                 let window_size = window.outer_size();
@@ -48,7 +47,40 @@ fn app() -> Element {
             }
         });
     });
-    
+
+    // 检查并同步注册表状态与配置文件状态
+    #[cfg(windows)]
+    use_effect(move || {
+        spawn(async move {
+            loop {
+                if auth_service.read().is_some() {
+                    break;
+                }
+                tokio::time::sleep(tokio::time::Duration::from_millis(100)).await;
+            }
+
+            if let Ok(mut config) = autologinguet_core::core::config::load_config() {
+                let registry_exists =
+                    autologinguet_core::core::config::is_auto_start_registry_exists();
+                let config_auto_start = config.settings.auto_start;
+
+                // 如果配置与注册表状态不一致，需要同步
+                if registry_exists != config_auto_start {
+                    config.settings.auto_start = registry_exists;
+
+                    if let Some(ref service) = *auth_service.read() {
+                        if let Err(e) = service.save_config(&config) {
+                            *message.write() = format!("同步开机自启配置失败: {}", e);
+                        } else {
+                            gui_config.write().auto_start = registry_exists;
+                            *message.write() = "已同步开机自启配置状态".to_string();
+                        }
+                    }
+                }
+            }
+        });
+    });
+
     use_future(move || async move {
         let mut message = message;
         loop {
@@ -58,19 +90,10 @@ fn app() -> Element {
             }
         }
     });
-    
-    init_app_config(
-        gui_config,
-        gui_config_with_data,
-        auth_service,
-        receiver,
-    );
-    
-    init_app_logs_and_network(
-        auth_service,
-        message,
-        logs,
-    );
+
+    init_app_config(gui_config, gui_config_with_data, auth_service, receiver);
+
+    init_app_logs_and_network(auth_service, message, logs);
 
     let on_username_input = move |e: Event<FormData>| {
         gui_config.write().username = e.value();
@@ -101,26 +124,31 @@ fn app() -> Element {
             *message.write() = String::new();
         }
     };
-    
+
     let on_isp_select = move |e: Event<FormData>| {
         gui_config.write().isp = e.value();
     };
-    
+
     let on_immediate_login = move |_| {
         if debug_info().enable_debug {
             *message.write() = "正在Debug登录...".to_string();
             session_logs.write().clear();
-            
+
             let mut current_gui_config = gui_config();
-            if current_gui_config.password.is_empty() && !gui_config_with_data().encrypted_password.is_empty() {
-                current_gui_config.encrypted_password = gui_config_with_data().encrypted_password.clone();
+            if current_gui_config.password.is_empty()
+                && !gui_config_with_data().encrypted_password.is_empty()
+            {
+                current_gui_config.encrypted_password =
+                    gui_config_with_data().encrypted_password.clone();
             }
-            
+
             let mut debug_output = String::new();
-            let debug_msg = format!("[{}] 开始Debug登录...\n", 
-                chrono::Local::now().format("%Y-%m-%d %H:%M:%S"));
+            let debug_msg = format!(
+                "[{}] 开始Debug登录...\n",
+                chrono::Local::now().format("%Y-%m-%d %H:%M:%S")
+            );
             debug_output.push_str(&debug_msg);
-            
+
             perform_debug_network_request(
                 current_gui_config,
                 debug_info,
@@ -128,11 +156,11 @@ fn app() -> Element {
                 session_logs,
                 debug_output,
             );
-
         } else {
             spawn(async move {
                 if let Some(ref service) = *auth_service.read() {
-                    let _ = crate::gui::gui_service::perform_login(service, &gui_config(), &gui_config_with_data(), message).await;
+                    let _ = crate::gui::gui_service::perform_login(service, &gui_config(), message)
+                        .await;
                 } else {
                     *message.write() = "认证服务未初始化".to_string();
                 }
@@ -142,11 +170,18 @@ fn app() -> Element {
 
     let on_auto_start_toggle = move |e: Event<FormData>| {
         let new_value = e.value() == "true";
-        
+
         #[cfg(windows)]
         spawn(async move {
             if let Some(ref service) = *auth_service.read() {
-                match crate::gui::gui_service::set_auto_start(service, new_value, &gui_config(), &gui_config_with_data()).await {
+                match crate::gui::gui_service::set_auto_start(
+                    service,
+                    new_value,
+                    &gui_config(),
+                    &gui_config_with_data(),
+                )
+                .await
+                {
                     Ok(_) => {
                         gui_config.write().auto_start = new_value;
                         *message.write() = "开机自启设置已更新".to_string();
@@ -159,44 +194,43 @@ fn app() -> Element {
                 *message.write() = "认证服务未初始化".to_string();
             }
         });
-        
     };
 
     rsx! {
-        div { 
+        div {
             style { {include_str!("../../assets/style.css")} }
             div { class: "container",
                 div { class: "top-right-icons",
-                    a { 
+                    a {
                         class: "icon-link",
                         href: "https://github.com/ReRokutosei/AutoLoginGuet",
                         target: "_blank",
                         title: "项目地址",
-                        img { 
+                        img {
                             src: "data:image/svg+xml;base64,{base64::engine::general_purpose::STANDARD.encode(include_bytes!(\"../../assets/github.svg\"))}",
                             class: "icon-svg",
                         }
                     }
-                    a { 
+                    a {
                         class: "icon-link",
                         href: "https://nicdrcom.guet.edu.cn/Self/unlogin/forgetPwd",
                         target: "_blank",
                         title: "重置密码",
-                        img { 
+                        img {
                             src: "data:image/svg+xml;base64,{base64::engine::general_purpose::STANDARD.encode(include_bytes!(\"../../assets/key.svg\"))}",
                             class: "icon-svg",
                         }
                     }
                 }
-                
+
                 div { class: "avatar-container",
-                    img { 
-                        class: "avatar", 
+                    img {
+                        class: "avatar",
                         src: "data:image/jpeg;base64,{base64::engine::general_purpose::STANDARD.encode(include_bytes!(\"../../assets/guet.jpg\"))}",
                         alt: "用户头像"
                     }
                 }
-                
+
                 div { class: "form-group",
                     div { class: "form-row",
                         input {
@@ -209,7 +243,7 @@ fn app() -> Element {
                         }
                     }
                 }
-                
+
                 div { class: "form-group",
                     div { class: "form-row",
                         div { class: "password-container",
@@ -219,7 +253,7 @@ fn app() -> Element {
                                 class: if *password_invalid.read() { "invalid" } else { "" },
                                 oninput: on_password_input,
                                 onblur: on_password_blur,
-                                
+
                             }
                             div {
                                 class: "password-hint",
@@ -241,6 +275,7 @@ fn app() -> Element {
                             option { value: "@cmcc", "中国移动" }
                             option { value: "@unicom", "中国联通" }
                             option { value: "@telecom", "中国电信" }
+                            option { value: "@glgd", "中国广电" }
                         }
                     }
                 }
@@ -274,7 +309,7 @@ fn app() -> Element {
                         label { "调试模式" }
                     }
                 }
-                
+
                 // 仅在调试模式下显示日志框
                 if debug_info().enable_debug {
                     div { class: "form-group",
@@ -289,15 +324,15 @@ fn app() -> Element {
                 }
 
                 div { class: "button-group",
-                    button { 
-                        class: "btn btn-success", 
+                    button {
+                        class: "btn btn-success",
                         onclick: on_immediate_login,
                         "立即登录"
                     }
                 }
-                
+
                 if !message().is_empty() {
-                    div { class: "alert alert-info", "{message}" }
+                    div { class: "alert alert-info", dangerous_inner_html: "{message().replace('\\n', \"<br />\")}" }
                 }
             }
         }
@@ -306,21 +341,17 @@ fn app() -> Element {
 
 /// 启动GUI
 pub fn launch_gui() {
-    use dioxus::prelude::LaunchBuilder;
-    use dioxus::desktop::{Config, WindowBuilder};
     use dioxus::desktop::tao::dpi::LogicalSize;
-    
+    use dioxus::desktop::{Config, WindowBuilder};
+    use dioxus::prelude::LaunchBuilder;
+
     let window = WindowBuilder::new()
         .with_title("AutoLoginGUET")
         .with_position(PhysicalPosition::new(100000, 100000))
         // 拼尽全力、用尽各种办法，都消除不了GUI启动时的一闪而过...
-        .with_inner_size(LogicalSize::new(320.0, 465.0));
+        .with_inner_size(LogicalSize::new(320.0, 475.0));
 
-    let config = Config::new()
-        .with_window(window)
-        .with_menu(None);
+    let config = Config::new().with_window(window).with_menu(None);
 
-    LaunchBuilder::new()
-        .with_cfg(config)
-        .launch(app);
+    LaunchBuilder::new().with_cfg(config).launch(app);
 }
