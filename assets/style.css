@@ -27,7 +27,7 @@ body {
 /* 右上角图标容器 */
 .top-right-icons {
     position: absolute;
-    top: 15px;
+    top: 5px;
     right: 30px;
     display: flex;
     gap: 15px;
