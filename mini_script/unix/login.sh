@@ -2,7 +2,7 @@
 
 USERNAME=""
 PASSWORD=""
-ISP="" # 运营商: ""(校园网), "@cmcc"(中国移动), "@unicom"(中国联通), "@telecom"(中国电信)
+ISP="" # 运营商: ""(校园网), "@cmcc"(中国移动), "@unicom"(中国联通), "@telecom"(中国电信), "@glgd"(中国广电)
 LOGIN_IP="http://10.0.1.5"
 
 FULL_USERNAME="${USERNAME}${ISP}"
@@ -24,7 +24,7 @@ if [ $? -ne 0 ]; then
 fi
 
 if [[ $RESPONSE == *"注销页"* ]] || [[ $RESPONSE == *"认证成功页"* ]] || [[ $RESPONSE == *"Dr.COMWebLoginID_3.htm"* ]] || [[ $RESPONSE == *"\"result\":1"* ]]; then
-    NOTIFICATION="登录成功！已接入广域网"
+    NOTIFICATION="登录成功！"
 
     if command -v osascript >/dev/null 2>&1; then
         osascript -e "display notification \"${NOTIFICATION}\""
