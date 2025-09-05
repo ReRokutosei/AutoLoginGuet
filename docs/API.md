@@ -16,6 +16,7 @@ src/
 │   ├── dto.rs         # 数据传输对象
 │   ├── error.rs       # 错误处理
 │   ├── events.rs      # 事件系统
+│   ├── flow.rs        # 流量信息获取
 │   ├── message.rs     # 消息处理中心
 │   ├── network.rs     # 网络管理
 │   └── service.rs     # 服务层（主要API）
@@ -40,13 +41,13 @@ let auth_service = AuthService::new(config);
 
 #### 主要方法
 
-##### `silent_login(&self, config: ConfigData) -> AppResult<LoginResult>`
+##### `check_network_status(&self, show_notification: bool) -> AppResult<(CampusNetworkStatus, WanStatus)>`
 
-执行静默登录操作。
+检查网络状态。
 
-- **参数**: `config` - 登录配置数据
-- **返回**: `LoginResult` - 登录结果
-- **用途**: 在后台自动执行登录流程，不显示GUI界面
+- **参数**: `show_notification` - 是否显示通知
+- **返回**: `(CampusNetworkStatus, WanStatus)` - 校园网状态和广域网状态的元组
+- **用途**: 检测当前网络连接状态
 
 ##### `login_with_credentials(&self, username: &str, password: &str, isp: &str) -> AppResult<LoginResult>`
 
@@ -58,6 +59,14 @@ let auth_service = AuthService::new(config);
   - `isp` - 运营商
 - **返回**: `LoginResult` - 登录结果
 - **用途**: 使用特定凭据执行登录
+
+##### `silent_login(&self, config: ConfigData) -> AppResult<LoginResult>`
+
+执行静默登录操作。
+
+- **参数**: `config` - 登录配置数据
+- **返回**: `LoginResult` - 登录结果
+- **用途**: 在后台自动执行登录流程，不显示GUI界面
 
 ##### `load_config(&self) -> AppResult<ConfigData>`
 
@@ -89,20 +98,41 @@ let auth_service = AuthService::new(config);
 - **返回**: `Result` - 操作结果
 - **用途**: 设置或取消程序开机自启（仅Windows平台）
 
+##### `get_event_bus(&self) -> &EventBus`
+
+获取事件总线的引用。
+
+- **返回**: `EventBus` - 事件总线引用
+- **用途**: 获取事件总线以便注册事件处理器
+
+##### `get_message_center(&self) -> &MessageCenter`
+
+获取消息中心的引用。
+
+- **返回**: `MessageCenter` - 消息中心引用
+- **用途**: 获取消息中心以便进行消息处理
+
 ### NetworkManager - 网络管理
 
 负责网络状态检测和登录请求发送。
 
 #### 主要方法
 
-##### `check_network_status(&self) -> AppResult<NetworkStatus>`
+##### `check_campus_network(&self) -> AppResult<CampusNetworkStatus>`
 
-检查网络状态。
+检查校园网状态。
 
-- **返回**: `NetworkStatus` - 网络状态枚举
-- **用途**: 检测当前网络连接状态
+- **返回**: `CampusNetworkStatus` - 校园网状态枚举
+- **用途**: 检测当前校园网连接状态
 
-##### `attempt_login_with_credentials(&self, username: &str, password: &str, isp: &str) -> AppResult<String>`
+##### `check_wan_network(&self) -> AppResult<WanStatus>`
+
+检查广域网状态。
+
+- **返回**: `WanStatus` - 广域网状态枚举
+- **用途**: 检测当前广域网连接状态
+
+##### `attempt_login_with_credentials(&self, username: &str, password: &str, isp: &str) -> AppResult<LoginAttemptResult>`
 
 尝试使用凭据登录。
 
@@ -110,7 +140,7 @@ let auth_service = AuthService::new(config);
   - `username` - 用户名
   - `password` - 密码
   - `isp` - 运营商
-- **返回**: `String` - 服务器响应内容
+- **返回**: `LoginAttemptResult` - 登录尝试结果
 - **用途**: 发送登录请求到校园网认证系统
 
 ### MessageCenter - 消息中心
@@ -119,13 +149,18 @@ let auth_service = AuthService::new(config);
 
 #### 主要方法
 
-##### `handle_login_result(&self, result: LoginResult) -> LoginResult`
+##### `handle_login_result(&self, campus_status: CampusNetworkStatus, wan_status: WanStatus, elapsed_time: f64, success: bool, flow_info: Option<String>) -> String`
 
-处理登录结果并发送相关通知。
+处理登录结果并生成消息。
 
-- **参数**: `result` - 登录结果
-- **返回**: `LoginResult` - 处理后的登录结果
-- **用途**: 记录日志、显示通知并触发事件
+- **参数**: 
+  - `campus_status` - 校园网状态
+  - `wan_status` - 广域网状态
+  - `elapsed_time` - 登录耗时（秒）
+  - `success` - 登录是否成功
+  - `flow_info` - 流量信息（可选）
+- **返回**: `String` - 处理后的消息
+- **用途**: 生成登录结果消息并记录日志、显示通知
 
 ##### `log_event(&self, level: &str, message: &str) -> AppResult<()>`
 
@@ -136,6 +171,16 @@ let auth_service = AuthService::new(config);
   - `message` - 日志消息
 - **返回**: `Result` - 操作结果
 - **用途**: 将消息写入日志文件
+
+##### `show_notification(&self, title: &str, message: &str) -> AppResult<()>`
+
+显示系统通知。
+
+- **参数**:
+  - `title` - 通知标题
+  - `message` - 通知内容
+- **返回**: `Result` - 操作结果
+- **用途**: 显示系统通知
 
 ### EventBus - 事件总线
 
@@ -180,21 +225,32 @@ pub struct ConfigData {
     pub account: AccountConfig,   // 账户配置
     pub network: NetworkConfig,   // 网络配置
     pub logging: LoggingConfig,   // 日志配置
+    pub message: MessageConfig,   // 消息配置
     pub settings: SettingsConfig, // 设置配置
 }
 ```
 
-### NetworkStatus
+### CampusNetworkStatus
 
-表示网络状态枚举。
+校园网状态枚举。
 
 ```rust
-pub enum NetworkStatus {
-    LoggedInAndConnected,     // 已登录校园网且能访问广域网
-    NotLoggedInButConnected,  // 未登录校园网但能访问广域网
-    NetworkCheckFailed,       // 网络检查失败
-    NoNetwork,                // 无法访问校园网且无法访问广域网
-    LoggedInButNoWan,         // 已登录校园网但不能访问广域网
+pub enum CampusNetworkStatus {
+    AlreadyLoggedIn,     // 已登录校园网
+    NotLoggedIn,         // 未登录校园网
+    LoginSuccess,        // 登录校园网成功
+}
+```
+
+### WanStatus
+
+广域网状态枚举。
+
+```rust
+pub enum WanStatus {
+    Connected,       // 已接入广域网
+    Disconnected,    // 无法访问广域网
+    CheckFailed,     // 广域网检查失败
 }
 ```
 
@@ -204,12 +260,33 @@ pub enum NetworkStatus {
 
 ```rust
 pub enum AppEvent<'a> {
-    NetworkStatusChecked { /* ... */ },  // 网络状态检查完成
-    LoginAttempted { /* ... */ },        // 登录尝试完成
-    ConfigLoaded { /* ... */ },          // 配置加载完成
-    ConfigSaved { /* ... */ },           // 配置保存完成
-    AutoStartSet { /* ... */ },          // 开机自启设置完成
-    NotificationShown { /* ... */ },     // 系统通知显示
+    NetworkStatusChecked { 
+        campus_status: CampusNetworkStatus,
+        wan_status: WanStatus,
+        message: &'a str,
+    },                              // 网络状态检查完成
+    LoginAttempted { 
+        success: bool, 
+        message: &'a str, 
+        elapsed_time: f64 
+    },                              // 登录尝试完成
+    ConfigLoaded { 
+        success: bool, 
+        message: &'a str 
+    },                              // 配置加载完成
+    ConfigSaved { 
+        success: bool, 
+        message: &'a str 
+    },                              // 配置保存完成
+    AutoStartSet { 
+        enabled: bool, 
+        success: bool, 
+        message: &'a str 
+    },                              // 开机自启设置完成
+    NotificationShown { 
+        title: &'a str, 
+        message: &'a str 
+    },                              // 系统通知显示
 }
 ```
 
@@ -287,7 +364,7 @@ fn main() {
     let auth_service = AuthService::new(config);
     
     // 注册自定义事件处理器
-    auth_service.register_event_handler(Box::new(MyEventHandler));
+    auth_service.get_event_bus().register_handler(Box::new(MyEventHandler));
     
     // 执行登录等操作
 }
