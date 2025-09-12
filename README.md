@@ -1,28 +1,95 @@
-# ⚡AutoLoginGUET
+<h1 align="center">
+  <br>⚡AutoLoginGUET<br>
+</h1>
 
-![Rust](https://img.shields.io/badge/Rust-000000.svg?logo=rust&logoColor=white)
-[![OS: Windows](https://img.shields.io/badge/OS-Windows10+-informational)](https://www.microsoft.com/zh-cn/windows)
-[![License: GPLv3](https://img.shields.io/badge/License-GPLv3-brightgreen)](LICENSE)
-[![Build and Release](https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml/badge.svg)](https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml)
+<p align="center">
+  <a href="https://www.rust-lang.org" target="_blank">
+    <img src="https://img.shields.io/badge/Rust-000000.svg?logo=rust&logoColor=white" alt="Rust">
+  </a>
+  &nbsp;
+  <a href="https://www.microsoft.com/zh-cn/windows" target="_blank">
+    <img src="https://img.shields.io/badge/OS-Windows10+-informational" alt="OS: Windows">
+  </a>
+  &nbsp;
+  <a href="https://github.com/ReRokutosei/AutoLoginGuet/releases" target="_blank">
+    <img src="https://img.shields.io/github/downloads/ReRokutosei/AutoLoginGuet/total?" alt="GitHub All Releases">
+  </a>
+  &nbsp;
+  <a href="https://github.com/ReRokutosei/AutoLoginGuet/releases" target="_blank">
+    <img src="https://img.shields.io/github/v/release/ReRokutosei/AutoLoginGuet?include_prereleases&sort=semver" alt="GitHub Release">
+  </a>
+  &nbsp;
+  <a href="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml" target="_blank">
+    <img src="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml/badge.svg" alt="Build And Release">
+  </a>
+  &nbsp;
+  <a href="LICENSE" target="_blank">
+    <img src="https://img.shields.io/badge/License-GPLv3-brightgreen" alt="License: GPLv3">
+  </a>
+  &nbsp;
+  <a href="https://github.com/dependabot" target="_blank">
+    <img src="https://img.shields.io/badge/Dependabot-enabled-green?logo=dependabot" alt="Dependabot">
+  </a>
+  &nbsp;
+  <a href="https://github.com/ReRokutosei/Rokutosei-views-counter" target="_blank">
+    <img src="https://github.com/ReRokutosei/Rokutosei-views-counter/blob/master/svg/969156905/badge.svg" alt="Project Views">
+  </a>
+  &nbsp;
+  <a href="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/loc.yml" target="_blank">
+    <img src="https://raw.githubusercontent.com/ReRokutosei/AutoLoginGuet/refs/heads/loc/badge.svg" alt="Lines of Code">
+  </a>
+</p>
 
+## ❓ Q&A
 
-🎓 校园网无感知认证对无线用户已足够友好
+<details>
+<summary>Q：这个项目适用于哪些学校？</summary>
+<p>⚡ 项目仅适配 <strong>GUET校园网</strong>，其他同为使用哆点供应商方案的学校可以参考</p>
+</details>
 
-🔌 **有线用户**每天重新开机后仍需**重复输入**登录信息
+<details>
+<summary>Q：校园网无线和有线有什么区别？</summary>
+<p>🎓 校园网无线与有线用户均受 300 分钟空闲超时（Idle Timeout）限制</p>
+<p>🔌 <strong>差异</strong>:</p>
+<ul>
+<li><strong>无线 (GUET-WiFi)</strong>: 通过首次 HTTP 请求重定向至认证网关 (<code>10.0.1.5/...?wlanuserip=...&amp;wlanacname=...</code>)，利用动态会话参数完成认证。认证后，后台系统可基于会话状态实现自动重连与状态保持，用户重连通常无需再次手动输入</li>
+<li><strong>有线</strong>: 通过访问网关 (<code>10.0.1.5</code>) 并提交表单（通常为 GET 请求，参数在 URL 中，使用 <code>10.0.1.5?DDDDD=账号&amp;upass=密码&amp;...</code>）进行认证。认证状态在超过 300 分钟无网络操作空闲时长（夜间关机至次日），会因超时而失效，需重新认证</li>
+</ul>
+</details>
 
-🎯 AutoLoginGUET 因此而生，让有线也能**无感**上网
+<details>
+<summary>Q：这个项目解决了什么问题？</summary>
+<p>🎯 解决有线用户一天一登录的繁琐操作问题，近似达到无感知认证</p>
+</details>
 
-## 🌟 功能特性
+<details>
+<summary>Q：这个项目有哪些主要功能？</summary>
+<ul>
+<li>🚀 <strong>自动登录</strong>: 短生命周期，单次执行即退出</li>
+<li>👻 <strong>静默模式</strong>: 在GUI填写信息并勾选开机自启后，将使用无窗口静默执行自动登录</li>
+<li>🔐 <strong>加密存储</strong>: 使用 AES 加密存储用户密码</li>
+<li>⚗️ <strong>流量查询</strong>: 登录时一并返回另一个用户自助系统的校园网流量信息(可选)</li>
+</ul>
+</details>
 
-- 🚀 **自动登录**: 短生命周期，单次执行即退出
-- 🖥️ **图形界面**: 提供直观易用的图形界面
-- 👻 **静默模式**: 也可无窗口静默启动
-- 🔐 **加密存储**: 使用 AES 加密存储用户密码
+<details>
+<summary>Q：为什么不用更轻便的 Python？</summary>
+<p>Python 脚本需要配置环境</p>
+<p>Python 打包体积巨大</p>
+<p>Rust 编译体积小，下载即用，对小白更友好</p>
+</details>
 
-> [!TIP]
-> 📦 项目现已添加 [mini_script](mini_script) 脚本目录，仅包含基本的登录和通知功能
-> 
-> 🛠️ 为**有经验**的三端(Win、Unix)用户提供**超轻量级**选择
+<details>
+<summary>Q：还有没有更轻的选择？</summary>
+<p>请见 <a href="mini_script">mini_script</a> 目录</p>
+<p>仅包含基本的登录和通知功能</p>
+</details>
+
+<details>
+<summary>Q：为什么不用C/Cpp/C#？</summary>
+<p>菜</p>
+</details>
+
 
 ## 📺 示意图
 
@@ -36,9 +103,12 @@
 - 运行安装程序，按照提示完成安装
 
 > [!IMPORTANT]
-> 🌐 前端依赖 WebView2，Win10 以后的版本（除企业版）基本内置了 Edge 浏览器，无需手动安装
+> 🌐 **前端依赖**: Microsoft Edge WebView2 Runtime
 >
-> 🔧 如果曾经卸载过相关组件，请前往[微软 WebView2 官网](https://developer.microsoft.com/zh-cn/microsoft-edge/webview2/)下载安装
+> 💻 **Windows 10/11 (非企业LTSC)**: 通常已内置，无需手动安装
+>
+> 🔧 若缺失或曾卸载，请访问 [Microsoft Edge WebView2 官网](https://developer.microsoft.com/en-us/microsoft-edge/webview2/) 下载安装。
+
 
 ## 🚀 使用方法
 
@@ -87,7 +157,7 @@
 静默模式的总耗时通常会比GUI模式长0.5-1秒左右，属于正常现象
 
 #### 📃 默认配置（`config.toml`）
-```toml
+```
 [message]
 notify_text = "%1 %2\n%3 %4"
 gui_text = "%1 %2"
