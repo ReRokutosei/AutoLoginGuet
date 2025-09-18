@@ -1,5 +1,6 @@
 #!/bin/bash
 
+# 配置你的参数
 USERNAME=""
 PASSWORD=""
 ISP="" # 运营商: ""(校园网), "@cmcc"(中国移动), "@unicom"(中国联通), "@telecom"(中国电信), "@glgd"(中国广电)

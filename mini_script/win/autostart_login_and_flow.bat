@@ -2,7 +2,7 @@
 setlocal EnableDelayedExpansion
 
 set "current_dir=%~dp0"
-set "ps1_name=login.ps1"
+set "ps1_name=login_and_flow.ps1"
 set "vbs_name=AutoLogin.vbs"
 set "full_path=%current_dir%%ps1_name%"
 
