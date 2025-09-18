@@ -15,7 +15,7 @@ jobs:
         with:
           debug: true
           directory: ./
-          badge_label: LOC
+          badge_label: Lines of Code
           badge_color: green
           badge: ./output/badge.svg
           ignore: '.gitignore|README.md|LICENSE|NOTICE|CHANGELOG.md|.idea|target|Cargo.lock|build.rs|assets|installer|mini_script|docs|*.exe|*.ico'
