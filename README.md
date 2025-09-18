@@ -3,55 +3,36 @@
 </h1>
 
 <p align="center">
-  <a href="https://www.rust-lang.org" target="_blank">
     <img src="https://img.shields.io/badge/Rust-000000.svg?logo=rust&logoColor=white" alt="Rust">
-  </a>
-  &nbsp;
-  <a href="https://www.microsoft.com/zh-cn/windows" target="_blank">
+    &nbsp;
     <img src="https://img.shields.io/badge/OS-Windows10+-informational" alt="OS: Windows">
-  </a>
-  &nbsp;
-  <a href="https://github.com/ReRokutosei/AutoLoginGuet/releases" target="_blank">
-    <img src="https://img.shields.io/github/downloads/ReRokutosei/AutoLoginGuet/total?" alt="GitHub All Releases">
-  </a>
-  &nbsp;
-  <a href="https://github.com/ReRokutosei/AutoLoginGuet/releases" target="_blank">
-    <img src="https://img.shields.io/github/v/release/ReRokutosei/AutoLoginGuet?include_prereleases&sort=semver" alt="GitHub Release">
-  </a>
-  &nbsp;
-  <a href="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml" target="_blank">
-    <img src="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml/badge.svg" alt="Build And Release">
-  </a>
-  &nbsp;
-  <a href="LICENSE" target="_blank">
-    <img src="https://img.shields.io/badge/License-GPLv3-brightgreen" alt="License: GPLv3">
-  </a>
-  &nbsp;
-  <a href="https://github.com/dependabot" target="_blank">
-    <img src="https://img.shields.io/badge/Dependabot-enabled-green?logo=dependabot" alt="Dependabot">
-  </a>
-  &nbsp;
-  <a href="https://github.com/ReRokutosei/Rokutosei-views-counter" target="_blank">
-    <img src="https://github.com/ReRokutosei/Rokutosei-views-counter/blob/master/svg/969156905/badge.svg" alt="Project Views">
-  </a>
-  &nbsp;
-  <a href="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/loc.yml" target="_blank">
+    &nbsp;
     <img src="https://raw.githubusercontent.com/ReRokutosei/AutoLoginGuet/refs/heads/loc/badge.svg" alt="Lines of Code">
-  </a>
+    &nbsp;
+    <img src="https://github.com/ReRokutosei/Rokutosei-views-counter/blob/master/svg/969156905/badge.svg" alt="Project Views">
+    &nbsp;
+    <img src="https://img.shields.io/badge/License-GPLv3-brightgreen" alt="License: GPLv3">
+    &nbsp;
+    <img src="https://img.shields.io/badge/Dependabot-enabled-green?logo=dependabot" alt="Dependabot">
+    &nbsp;
+    <img src="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml/badge.svg" alt="Build And Release">
+    &nbsp;
+    <img src="https://img.shields.io/github/v/release/ReRokutosei/AutoLoginGuet?include_prereleases&sort=semver" alt="GitHub Release">
+    &nbsp;
+    <img src="https://img.shields.io/github/downloads/ReRokutosei/AutoLoginGuet/total?" alt="GitHub All Releases">
 </p>
 
 ## ❓ Q&A
 
 <details>
 <summary>Q：这个项目适用于哪些学校？</summary>
-<p>⚡ 项目仅适配 <strong>GUET校园网</strong>，其他同为使用哆点供应商方案的学校可以参考</p>
+<ul><p>⚡ 项目仅适配 <strong>GUET校园网</strong>，其他同为使用哆点供应商方案的学校可以参考</p></ul>
 </details>
 
 <details>
 <summary>Q：校园网无线和有线有什么区别？</summary>
-<p>🎓 校园网无线与有线用户均受 300 分钟空闲超时（Idle Timeout）限制</p>
-<p>🔌 <strong>差异</strong>:</p>
 <ul>
+<p>🎓 校园网无线与有线用户均受 300 分钟空闲超时（Idle Timeout）限制</p>
 <li><strong>无线 (GUET-WiFi)</strong>: 通过首次 HTTP 请求重定向至认证网关 (<code>10.0.1.5/...?wlanuserip=...&amp;wlanacname=...</code>)，利用动态会话参数完成认证。认证后，后台系统可基于会话状态实现自动重连与状态保持，用户重连通常无需再次手动输入</li>
 <li><strong>有线</strong>: 通过访问网关 (<code>10.0.1.5</code>) 并提交表单（通常为 GET 请求，参数在 URL 中，使用 <code>10.0.1.5?DDDDD=账号&amp;upass=密码&amp;...</code>）进行认证。认证状态在超过 300 分钟无网络操作空闲时长（夜间关机至次日），会因超时而失效，需重新认证</li>
 </ul>
@@ -74,20 +55,20 @@
 
 <details>
 <summary>Q：为什么不用更轻便的 Python？</summary>
-<p>Python 脚本需要配置环境</p>
-<p>Python 打包体积巨大</p>
-<p>Rust 编译体积小，下载即用，对小白更友好</p>
+<ul>
+<li> Python 脚本需要配置环境且打包体积巨大</li>
+<li>Rust 编译体积更小，下载即用，对小白更友好</li>
+</ul>
 </details>
 
 <details>
 <summary>Q：还有没有更轻的选择？</summary>
-<p>请见 <a href="mini_script">mini_script</a> 目录</p>
-<p>仅包含基本的登录和通知功能</p>
+<ul><p>请见 <a href="mini_script">mini_script</a> 目录</p><ul>
 </details>
 
 <details>
 <summary>Q：为什么不用C/Cpp/C#？</summary>
-<p>菜</p>
+<ul><p>菜</p></ul>
 </details>
 
 
