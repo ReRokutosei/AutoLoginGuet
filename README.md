@@ -3,23 +3,19 @@
 </h1>
 
 <p align="center">
-    <img src="https://img.shields.io/badge/Rust-000000.svg?logo=rust&logoColor=white" alt="Rust">
+    <img src="https://img.shields.io/badge/Rust-EF5021?logo=rust&logoColor=white&style=for-the-badge" alt="Rust">
     &nbsp;
-    <img src="https://img.shields.io/badge/OS-Windows10+-informational" alt="OS: Windows">
+    <img src="https://img.shields.io/badge/Windows%2010%2B-0078D7?&style=for-the-badge" alt="OS: Windows">
     &nbsp;
-    <img src="https://raw.githubusercontent.com/ReRokutosei/AutoLoginGuet/refs/heads/loc/badge.svg" alt="Lines of Code">
+    <img src="https://img.shields.io/badge/Dependabot-0366D6?logo=dependabot&logoColor=white&style=for-the-badge" alt="Dependabot">
     &nbsp;
-    <img src="https://github.com/ReRokutosei/Rokutosei-views-counter/blob/master/svg/969156905/badge.svg" alt="Project Views">
+    <img src="https://img.shields.io/badge/GPL%20v3-008033?style=for-the-badge&logo=gnu&logoColor=white" alt="License: GPLv3">
     &nbsp;
-    <img src="https://img.shields.io/badge/License-GPLv3-brightgreen" alt="License: GPLv3">
+    <img src="https://img.shields.io/github/actions/workflow/status/ReRokutosei/AutoLoginGuet/release.yml?label=Action%20Build&logo=github-actions&logoColor=white&color=1F883D&style=for-the-badge" alt="Action Build">
     &nbsp;
-    <img src="https://img.shields.io/badge/Dependabot-enabled-green?logo=dependabot" alt="Dependabot">
+    <img src="https://img.shields.io/github/v/release/ReRokutosei/AutoLoginGuet?include_prereleases&sort=semver&logo=git&logoColor=white&color=2088FF&style=for-the-badge" alt="Release Vesion">
     &nbsp;
-    <img src="https://github.com/ReRokutosei/AutoLoginGuet/actions/workflows/release.yml/badge.svg" alt="Build And Release">
-    &nbsp;
-    <img src="https://img.shields.io/github/v/release/ReRokutosei/AutoLoginGuet?include_prereleases&sort=semver" alt="GitHub Release">
-    &nbsp;
-    <img src="https://img.shields.io/github/downloads/ReRokutosei/AutoLoginGuet/total?" alt="GitHub All Releases">
+    <img src="https://img.shields.io/github/downloads/ReRokutosei/AutoLoginGuet/total?logo=github&logoColor=white&color=A371F7&style=for-the-badge" alt="Downloads">
 </p>
 
 ## ❓ Q&A

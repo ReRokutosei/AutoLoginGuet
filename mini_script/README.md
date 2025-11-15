@@ -5,9 +5,11 @@
 1. `only-login`：
    - 仅登录功能
    - 适合**有线网**且运营商为**中国移动、联通、电信、广电**的用户
-2. `only-flow`：
-   - 仅流量查询功能
-   - 适合**无线网**且运营商为**校园网**的用户
+
+~~2. `only-flow`：~~
+   ~~- 仅流量查询功能~~
+   ~~- 适合**无线网**且运营商为**校园网**的用户~~
+  ~~脚本有问题，不想修了~~
 3. `login_and_flow`：
    - 合并登录与流量查询功能
    - 适合适合**有线网**且运营商为**校园网**的用户
@@ -29,7 +31,7 @@
 
 2. 根据自身情况选择脚本文件：
    - [only-login.ps1](mini_script/win/only-login.ps1)
-   - [only-flow.ps1](mini_script/win/only-flow.ps1)
+   - ~~[only-flow.ps1](mini_script/win/only-flow.ps1)~~
    - [login_and_flow.ps1](mini_script/win/login_and_flow.ps1)
 
 3. 填写并保存配置
