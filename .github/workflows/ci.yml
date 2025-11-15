@@ -1,0 +1,30 @@
+name: Check
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: windows-2022
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+
+    - name: Install Rust
+      uses: actions-rs/toolchain@v1
+      with:
+        toolchain: stable
+        target: x86_64-pc-windows-msvc
+        override: true
+
+    - name: Run clippy
+      run: |
+        rustup component add clippy
+        cargo clippy -- -D warnings
+
+    - name: Build
+      run: cargo build
