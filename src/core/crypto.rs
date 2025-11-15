@@ -39,7 +39,7 @@ fn derive_key(password: &str) -> [u8; 32] {
 pub fn encrypt_password(password: &str, key: &str) -> AppResult<String> {
     let key = derive_key(key);
     let mut iv = [0u8; 16];
-    rand::thread_rng().fill_bytes(&mut iv);
+    rand::rng().fill_bytes(&mut iv);
 
     let cipher = Aes256CbcEnc::new(&key.into(), &iv.into());
     let mut buffer = vec![0u8; password.len() + 16];

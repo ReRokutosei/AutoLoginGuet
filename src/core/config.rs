@@ -173,10 +173,10 @@ impl ConfigManager {
         let mut last_save_time = self.last_save_time.lock().await;
 
         let now = Instant::now();
-        if let Some(last_time) = *last_save_time {
-            if now.duration_since(last_time) < self.debounce_delay {
-                return Ok(());
-            }
+        if let Some(last_time) = *last_save_time
+            && now.duration_since(last_time) < self.debounce_delay
+        {
+            return Ok(());
         }
 
         *last_save_time = Some(now);
@@ -374,16 +374,13 @@ pub fn is_auto_start_registry_exists() -> bool {
         "AutoLoginGuet",
     );
 
-    if let Ok(reg_key) = hkcu.open_subkey_with_flags(reg_path, KEY_READ) {
-        if let Ok(value) = reg_key.get_value::<String, _>(app_name) {
-            if let Ok(exe_path) = env::current_exe() {
-                let expected_value =
-                    format!("\"{}\" -silent", exe_path.to_str().unwrap_or_default());
-                return value == expected_value;
-            }
+    if let Ok(reg_key) = hkcu.open_subkey_with_flags(reg_path, KEY_READ)
+        && let Ok(value) = reg_key.get_value::<String, _>(app_name)
+        && let Ok(exe_path) = env::current_exe() {
+            let expected_value =
+            format!("\"{}\" -silent", exe_path.to_str().unwrap_or_default());
+            return value == expected_value;
         }
-    }
-
     false
 }
 

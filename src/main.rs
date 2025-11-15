@@ -21,11 +21,10 @@ fn main() -> AppResult<()> {
         }
     }
 
-    if let Ok(exe_path) = env::current_exe() {
-        if let Some(exe_dir) = exe_path.parent() {
+    if let Ok(exe_path) = env::current_exe()
+        && let Some(exe_dir) = exe_path.parent() {
             let _ = env::set_current_dir(exe_dir);
         }
-    }
 
     let args: Vec<String> = env::args().collect();
 

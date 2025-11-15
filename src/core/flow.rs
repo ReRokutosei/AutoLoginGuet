@@ -210,8 +210,8 @@ impl FlowService {
     /// 生成随机四位数字验证码
     fn generate_random_code(&self) -> String {
         use rand::Rng;
-        let mut rng = rand::thread_rng();
-        format!("{:04}", rng.gen_range(0..=9999))
+        let mut rng = rand::rng();
+        format!("{:04}", rng.random_range(0..=9999))
     }
 
     /// MD5加密

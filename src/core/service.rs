@@ -89,13 +89,13 @@ impl AuthService {
     ///
     /// 根据配置判断是否需要调用流量模块
     fn should_get_flow_info(&self) -> bool {
-        if let Ok(config) = self.load_config() {
-            if config.account.isp.is_empty() {
-                // 检查消息配置中是否包含%4占位符
-                return config.message.notify_text.contains("%4")
-                    || config.message.gui_text.contains("%4")
-                    || config.message.log_text.contains("%4");
-            }
+        if let Ok(config) = self.load_config()
+            && config.account.isp.is_empty()
+        {
+            // 检查消息配置中是否包含%4占位符
+            return config.message.notify_text.contains("%4")
+                || config.message.gui_text.contains("%4")
+                || config.message.log_text.contains("%4");
         }
         false
     }

@@ -139,22 +139,22 @@ impl NetworkManager {
                         let status = response.status();
 
                         // 检查是否被重定向到校园网登录页面
-                        if let Some(url) = response.url().host_str() {
-                            if login_ip.contains(url) {
-                                // 被重定向到校园网登录页面，说明未连接外网
-                                return false;
-                            }
+                        if let Some(url) = response.url().host_str()
+                            && login_ip.contains(url)
+                        {
+                            // 被重定向到校园网登录页面，说明未连接外网
+                            return false;
                         }
 
                         // 检查响应内容是否包含登录页面标题
                         let text_result =
                             tokio::time::timeout(Duration::from_secs(3), response.text()).await;
 
-                        if let Ok(Ok(text)) = text_result {
-                            if text.contains(&not_sign_in_title) {
-                                // 响应内容是登录页面，说明未连接外网
-                                return false;
-                            }
+                        if let Ok(Ok(text)) = text_result
+                            && text.contains(&not_sign_in_title)
+                        {
+                            // 响应内容是登录页面，说明未连接外网
+                            return false;
                         }
 
                         status.is_success()
